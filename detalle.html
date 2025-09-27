@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle del Libro</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Detalle del Libro</h1>
+  </header>
+  <main>
+    <div id="detalle-libro"></div>
+    <p><a href="index.html">← Volver a la lista</a></p>
+  </main>
+  <script>
+    // Leer parámetros de la URL
+    const params = new URLSearchParams(window.location.search);
+    const index = params.get('index');
+
+    fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vR_lN4MQGP2PigjKJFOV8ZK92MvfpQWj8aH7qqntBJHOKv6XsvLAxriHmjU3WcD7kafNvNbj3pTFqND/pub?gid=0&single=true&output=csv')
+      .then(res => res.text())
+      .then(csv => {
+        const rows = csv.split('\n').map(r => r.split(','));
+        const headers = rows[0];
+        const libro = rows[parseInt(index) + 1]; // +1 por encabezados
+        const cont = document.getElementById('detalle-libro');
+        cont.innerHTML = '<h2>' + libro[0] + '</h2>';
+        headers.forEach((h, i) => {
+          cont.innerHTML += `<p><strong>${h}:</strong> ${libro[i]}</p>`;
+        });
+      });
+  </script>
+</body>
+</html>

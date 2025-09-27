@@ -2,18 +2,43 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Biblioteca Fa 📚</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biblioteca Fátima</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Biblioteca Fa 📖</h1>
-  
-  <div id="filtros">
-    <h3>Filtrar por género:</h3>
-    <div id="botones-genero"></div>
-  </div>
+  <header>
+    <h1>Biblioteca Fátima</h1>
+    <p class="descripcion">
+      Base de datos personal de mis libros favoritos y reseñas.
+    </p>
+  </header>
 
-  <div id="lista"></div>
+  <main>
+    <section>
+      <h2>Lista de Libros</h2>
+      <table id="tabla-libros">
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Autor</th>
+            <th>Género</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Filtrar por Género</h2>
+      <div id="botones-generos"></div>
+      <div id="resultados-filtrados"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Biblioteca Fátima</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
