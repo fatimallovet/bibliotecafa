@@ -13,3 +13,7 @@ h1, h2 {
 #tarjetasLibros .card:hover {
   transform: scale(1.05);
 }
+
+#randomLibro {
+  font-size: 1.2rem;
+}
