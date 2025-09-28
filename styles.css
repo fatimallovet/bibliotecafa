@@ -1,74 +1,15 @@
-:root{
-  --bg-1:#071226;
-  --bg-2:#0b1b2b;
-  --accent-1:#9b77ff; /* lavanda */
-  --accent-2:#60a5fa; /* azul */
-  --muted:#9fb0c8;
-  --card: rgba(255,255,255,0.03);
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: linear-gradient(180deg,var(--bg-1) 0%, var(--bg-2) 100%);
-  color:#e7eef8;
-  -webkit-font-smoothing:antialiased;
+h1, h2 {
+  color: #3c3c7c;
 }
 
-.site{display:flex;flex-direction:column;min-height:100vh}
-
-/* HERO */
-.hero{
-  padding:36px 18px;
-  border-bottom:1px solid rgba(255,255,255,0.03);
-  background:linear-gradient(90deg, rgba(155,119,255,0.06), rgba(96,165,250,0.03));
+#tarjetasLibros .card {
+  transition: transform 0.2s ease-in-out;
 }
-.hero-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:18px}
-.hero h1{margin:0;font-size:clamp(22px,3.4vw,36px);color:var(--accent-1)}
-.lead{color:var(--muted);margin:6px 0 0}
-.hero-actions{display:flex;gap:12px;align-items:center}
-#buscar{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);min-width:260px;background:transparent;color:inherit}
-#btn-random{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:10px 14px;border-radius:10px;color:#071226;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(96,165,250,0.12)}
 
-/* CONTAINER */
-.container{max-width:1100px;margin:26px auto;padding:0 18px;flex:1}
-.panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;margin-bottom:18px;box-shadow:0 10px 30px rgba(2,6,23,0.6)}
-.panel h2{margin:0 0 8px;color:#dbeafe}
-.muted{color:var(--muted);margin:0 0 12px}
-.msg{color: #ffd9e8; margin-bottom:8px}
-
-/* TABLE */
-.table-wrap{overflow:auto;border-radius:10px}
-.styled-table{width:100%;border-collapse:collapse;font-size:15px}
-.styled-table thead th{position:sticky;top:0;background:rgba(255,255,255,0.02);padding:12px;text-align:left;color:var(--muted);font-weight:700}
-.styled-table tbody td{padding:12px;border-top:1px solid rgba(255,255,255,0.03)}
-.styled-table tbody tr{transition:background .12s, transform .08s}
-.styled-table tbody tr:hover{background:linear-gradient(90deg, rgba(96,165,250,0.06), rgba(155,119,255,0.03));transform:translateY(-3px);cursor:pointer}
-
-/* CHIPS */
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.chip{padding:8px 12px;border-radius:999px;background:var(--card);border:1px solid rgba(255,255,255,0.03);cursor:pointer;color:var(--muted);font-weight:600}
-.chip.active{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#071226;box-shadow:0 8px 30px rgba(0,0,0,0.25)}
-
-/* CARDS */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:16px}
-.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:10px;box-shadow:0 10px 30px rgba(2,6,23,0.6)}
-.card h3{margin:0 0 6px;color:#e6eef8}
-.card p{margin:4px 0;color:var(--muted);font-size:14px}
-
-/* MODAL */
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:120}
-.modal[aria-hidden="false"]{display:flex}
-.modal-dialog{background:linear-gradient(180deg,#071226,#07182b);padding:20px;border-radius:12px;max-width:760px;width:94%;color:#e6eef8;position:relative}
-.modal-close{position:absolute;right:12px;top:12px;background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer}
-
-/* FOOTER */
-.footer{text-align:center;padding:18px;color:var(--muted);font-size:14px}
-
-/* Responsive tweaks */
-@media (max-width:700px){
-  .hero-inner{flex-direction:column;align-items:flex-start}
-  #buscar{min-width:160px}
+#tarjetasLibros .card:hover {
+  transform: scale(1.05);
 }
