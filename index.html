@@ -1,48 +1,65 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Biblioteca Fátima</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- PapaParse para leer CSV correctamente -->
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- PapaParse (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Biblioteca Fátima</h1>
-    <p class="descripcion">Encuentra recomendaciones y datos de libros fácilmente.</p>
-  </header>
+  <div class="site">
+    <header class="hero">
+      <div class="hero-inner">
+        <div>
+          <h1>Biblioteca Fátima</h1>
+          <p class="lead">Recomendaciones y ficha rápida de mis libros. Busca por título, autor o explora por género.</p>
+        </div>
+        <div class="hero-actions">
+          <input id="buscar" type="search" placeholder="Buscar por título o autor..." />
+          <button id="btn-random">🎲 Sorpréndeme</button>
+        </div>
+      </div>
+    </header>
 
-  <main>
-    <section>
-      <h2>Lista de Libros</h2>
-      <table id="tabla-libros">
-        <thead>
-          <tr>
-            <th>Título</th>
-            <th>Autor</th>
-            <th>Género</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
+    <main class="container">
+      <section class="panel">
+        <h2>Listado de libros</h2>
+        <div id="msg" class="msg" aria-live="polite"></div>
+        <div class="table-wrap">
+          <table id="tabla-libros" class="styled-table" aria-label="Lista de libros">
+            <thead>
+              <tr><th>Título</th><th>Autor</th><th>Género</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
 
-    <section>
-      <h2>Filtrar por Género</h2>
-      <div id="botones-generos"></div>
-      <div id="resultados-filtrados"></div>
-    </section>
+      <section class="panel">
+        <h2>Filtrar por género</h2>
+        <p class="muted">Selecciona uno o varios géneros (los extracción automáticamente).</p>
+        <div id="generos" class="chips"></div>
+        <div id="cards" class="cards-grid" aria-live="polite"></div>
+      </section>
+    </main>
 
-    <section>
-      <h2>Libro al azar</h2>
-      <button id="btn-azar">🎲 Dame un libro al azar</button>
-      <div id="libro-azar"></div>
-    </section>
-  </main>
+    <footer class="footer">
+      <p>&copy; 2025 Biblioteca Fátima</p>
+    </footer>
+  </div>
 
-  <footer>&copy; 2025 Biblioteca Fátima</footer>
+  <!-- Modal simple para detalle -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <button id="cerrar-modal" class="modal-close" aria-label="Cerrar">✕</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
