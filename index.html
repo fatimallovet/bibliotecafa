@@ -1,45 +1,65 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Biblioteca Fátima</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Biblioteca Fátima</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>Biblioteca Fátima</h1>
-    <p class="descripcion">
-      Base de datos personal de mis libros favoritos y reseñas.
-    </p>
-  </header>
+<div class="site-wrap">
+<header class="hero">
+<div class="hero-inner">
+<h1>Biblioteca Fátima</h1>
+<p class="tagline">Recomendaciones y ficha rápida de mis libros favoritos. Busca por título, autor o explora por género.</p>
+<div class="hero-actions">
+<input id="buscar" type="search" placeholder="Buscar por título o autor..." aria-label="Buscar" />
+<button id="btn-random">Sorpréndeme (random)</button>
+</div>
+</div>
+</header>
 
-  <main>
-    <section>
-      <h2>Lista de Libros</h2>
-      <table id="tabla-libros">
-        <thead>
-          <tr>
-            <th>Título</th>
-            <th>Autor</th>
-            <th>Género</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
 
-    <section>
-      <h2>Filtrar por Género</h2>
-      <div id="botones-generos"></div>
-      <div id="resultados-filtrados"></div>
-    </section>
-  </main>
+<main class="container">
+<section class="panel">
+<h2>Listado de libros</h2>
+<div class="table-wrap">
+<table id="tabla-libros" class="styled-table" aria-label="Lista de libros">
+<thead>
+<tr>
+<th>Título</th>
+<th>Autor</th>
+<th>Género</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+</section>
 
-  <footer>
-    <p>&copy; 2025 Biblioteca Fátima</p>
-  </footer>
 
-  <script src="script.js"></script>
+<section class="panel">
+<h2>Filtrar por género</h2>
+<p class="small">Selecciona uno o varios géneros para filtrar. Los géneros se extraen automáticamente de la base de datos.</p>
+<div id="generos" class="chips"></div>
+<div id="cards" class="cards-grid"></div>
+</section>
+</main>
+
+
+<footer class="footer">
+<p>&copy; 2025 Biblioteca Fátima — Hecho con ❤️</p>
+</footer>
+</div>
+
+
+<!-- Modal para detalle y libro random -->
+<div id="modal" class="modal" aria-hidden="true">
+<div class="modal-dialog">
+<button id="cerrar-modal" class="modal-close" aria-label="Cerrar">✕</button>
+<div id="modal-content"></div>
+</div>
+</div>
+
+
+<script src="script.js"></script>
 </body>
 </html>
