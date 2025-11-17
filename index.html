@@ -1,85 +1,32 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Videoteca Fátima</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header class="site-header">
-    <nav class="navbar">
-      <h1>Videoteca Fátima</h1>
-      <div class="nav-controls">
-        <button id="btnLightDark" title="Cambiar tema">🌙</button>
-      </div>
-    </nav>
-    <p>Proyecto en construcción......</p>
-  </header>
-
- <main>
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="tabLibros">📚 Lista de Pelis</button>
-    <button class="tab-btn" data-tab="tabGeneros">🎭 Series</button>
-   <!-- <button class="tab-btn" data-tab="tabRandom">🎲 Random</button>   NUEVO -->
-  </div>
-
-  <!-- Pestaña principal -->
-  <section id="tabLibros" class="tab active">
-    <div class="section-header">
-      <h2>Pelis</h2>
-      <input id="busqueda" type="text" placeholder="🔍 Buscar por título, género, autor o palabras clave...">
-    </div>
-
-    <table id="tablaLibros">
-      <thead>
-        <tr>
-          <th data-sort="calificacion">Calificación</th>
-          <th data-sort="titulo">Título</th>
-          <th data-sort="autor">Autor</th>
-          <th data-sort="genero">Género</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <p id="contadorLibros" class="contador"></p>
-</section> 
+<!-- HTML FILE (index.html) -->
+<div id="inicio" class="tab visible">
+<h2>Bienvenida</h2>
+<p>Aquí irá una pequeña descripción o mensaje inicial.</p>
+</div>
 
 
-  <!-- Pestaña de géneros -->
-  <section id="tabGeneros" class="tab">
-    <h2>Series</h2>
-    <select id="generoSelect">
-      <option value="">Todos</option>
-    </select>
-    <div id="tarjetasLibros" class="tarjetas"></div>
-  </section>
+<div id="peliculas" class="tab">
+<h2>Películas</h2>
+<div class="search-container">
+<input type="text" placeholder="Buscar película..." />
+</div>
+<div class="cards">
+<!-- Películas -->
+</div>
+</div>
 
-<!--
-<section id="tabRandom" class="tab">
-  <h2>Libro al Azar</h2>
-  <button id="btnRandom">🎲 Dame un libro random</button>
-  <div id="randomLibro" class="random"></div>
-</section>
- -->
 
-</main>
+<div id="series" class="tab">
+<h2>Series</h2>
+<div class="search-container">
+<input type="text" placeholder="Buscar serie..." />
+</div>
+<div class="cards">
+<!-- Series -->
+</div>
+</div>
 
-  <footer>
-    <p>&copy; 2025 Videoteca Fátima</p>
-  </footer>
 
-  <!-- Modal Detalle -->
-  <div id="detalleModal" class="modal hidden">
-    <div class="modal-content">
-      <span id="cerrarModal" class="close">&times;</span>
-      <div id="detalleContenido"></div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
