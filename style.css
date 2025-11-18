@@ -122,3 +122,11 @@ h2 {
   padding: 20px;
   width: 320px;
   border-radius: 18px;
+}
+
+.close-btn {
+  float: right;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #6a4fbf;
+}
