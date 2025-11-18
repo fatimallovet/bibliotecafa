@@ -1,9 +1,6 @@
 function openTab(tabId, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('visible'));
   document.getElementById(tabId).classList.add('visible');
-
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
 }
 
 const URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRfZKKu9u0USHXUnyUHQXSxf4uRXK--I5t_5JEE4pjUhe23SWVEZfg1u1R33zazOyh2GIDb9koa8hga/pub?output=csv";
