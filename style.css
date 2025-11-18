@@ -1,55 +1,81 @@
 /* NAV */
 nav {
   display: flex;
-  background-color: #6a1b9a;
+  background: linear-gradient(90deg, #5f2b90, #7d44c2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 nav button {
   flex: 1;
   padding: 15px;
+  background: transparent;
+  color: #fff;
   border: none;
-  background: none;
-  color: white;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.25s;
+  letter-spacing: 0.5px;
 }
 
 nav button.active,
 nav button:hover {
-  background-color: #4a148c;
+  background: rgba(255,255,255,0.15);
 }
 
-/* TABS */
+/* GENERAL */
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: #f4f0fa;
+  color: #2b2b2b;
+}
+
+h1, h2 {
+  color: #4d2e79;
+}
+
 .tab {
   display: none;
-  padding: 20px;
+  padding: 25px;
 }
 .visible {
   display: block;
 }
 
-/* TABLAS */
-.tabla-lista {
+.intro {
+  margin-top: -10px;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+/* TABLA */
+.tabla {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 15px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
-.tabla-lista th,
-.tabla-lista td {
-  padding: 12px;
-  border-bottom: 1px solid #ddd;
-}
-
-.tabla-lista tr:hover {
-  background: #f0e5ff;
-  cursor: pointer;
-}
-
-.tabla-lista th {
-  background: #6a1b9a;
+.tabla th {
+  background: #6c3bb8;
   color: white;
+  padding: 14px;
+  font-weight: 600;
+}
+
+.tabla td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.tabla tr:hover {
+  background: #f1e8ff;
+  cursor: pointer;
 }
 
 /* MODAL */
@@ -57,22 +83,43 @@ nav button:hover {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.55);
   justify-content: center;
   align-items: center;
 }
 
 .modal-content {
   background: white;
-  padding: 20px;
-  width: 300px;
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  width: 420px;
+  max-width: 90%;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  animation: abrir 0.25s ease;
 }
 
-.close-btn {
+@keyframes abrir {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.close {
   float: right;
+  font-size: 1.6rem;
   cursor: pointer;
-  font-size: 1.2rem;
-  color: #6a1b9a;
+  color: #6c3bb8;
+}
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.resena {
+  background: #faf7ff;
+  border-left: 4px solid #6c3bb8;
+  padding: 12px;
+  border-radius: 8px;
 }

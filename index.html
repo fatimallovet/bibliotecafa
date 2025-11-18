@@ -16,13 +16,14 @@
 </nav>
 
 <div id="inicio" class="tab visible">
-  <h2>Bienvenida</h2>
-  <p>Proyecto en Construcción.</p>
+  <h1>🎬 Videoteca Fátima</h1>
+  <p class="intro">Un lugar para organizar películas y series con estilo.</p>
 </div>
 
+<!-- TABLA PELÍCULAS -->
 <div id="peliculas" class="tab">
   <h2>Películas</h2>
-  <table id="tablaPeliculas" class="tabla-lista">
+  <table id="tablaPeliculas" class="tabla">
     <thead>
       <tr>
         <th>Título</th>
@@ -35,9 +36,10 @@
   </table>
 </div>
 
+<!-- TABLA SERIES -->
 <div id="series" class="tab">
   <h2>Series</h2>
-  <table id="tablaSeries" class="tabla-lista">
+  <table id="tablaSeries" class="tabla">
     <thead>
       <tr>
         <th>Título</th>
@@ -50,15 +52,28 @@
   </table>
 </div>
 
-<!-- MODAL PARA TARJETA -->
+<!-- MODAL -->
 <div id="modal" class="modal">
   <div class="modal-content">
-    <span class="close-btn" onclick="cerrarModal()">✖</span>
-    <h3 id="modal-titulo"></h3>
-    <p><strong>Año:</strong> <span id="modal-anio"></span></p>
-    <p><strong>Calificación:</strong> <span id="modal-calificacion"></span></p>
-    <p><strong>Género:</strong> <span id="modal-genero"></span></p>
-    <p><strong>Tipo:</strong> <span id="modal-tipo"></span></p>
+      <span class="close" onclick="cerrarModal()">×</span>
+
+      <h2 id="m-titulo"></h2>
+
+      <div class="modal-grid">
+
+        <p><strong>Año:</strong><br><span id="m-anio"></span></p>
+        <p><strong>Calificación:</strong><br><span id="m-calif"></span></p>
+        <p><strong>Género:</strong><br><span id="m-genero"></span></p>
+        <p><strong>Tono:</strong><br><span id="m-tono"></span></p>
+        <p><strong>Ritmo:</strong><br><span id="m-ritmo"></span></p>
+        <p><strong>Público:</strong><br><span id="m-publico"></span></p>
+        <p><strong>Etiquetas:</strong><br><span id="m-etiquetas"></span></p>
+        <p><strong>Flags:</strong><br><span id="m-flags"></span></p>
+
+      </div>
+
+      <h3>Reseña</h3>
+      <p id="m-resena" class="resena"></p>
   </div>
 </div>
 
