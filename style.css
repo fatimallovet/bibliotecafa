@@ -1,81 +1,55 @@
 /* NAV */
 nav {
   display: flex;
-  background: linear-gradient(90deg, #5f2b90, #7d44c2);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  background-color: #6a1b9a;
 }
 
 nav button {
   flex: 1;
   padding: 15px;
-  background: transparent;
-  color: #fff;
   border: none;
+  background: none;
+  color: white;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.25s;
-  letter-spacing: 0.5px;
+  transition: background 0.3s ease;
 }
 
 nav button.active,
 nav button:hover {
-  background: rgba(255,255,255,0.15);
+  background-color: #4a148c;
 }
 
-/* GENERAL */
-body {
-  margin: 0;
-  font-family: "Poppins", sans-serif;
-  background: #f4f0fa;
-  color: #2b2b2b;
-}
-
-h1, h2 {
-  color: #4d2e79;
-}
-
+/* TABS */
 .tab {
   display: none;
-  padding: 25px;
+  padding: 20px;
 }
 .visible {
   display: block;
 }
 
-.intro {
-  margin-top: -10px;
-  font-size: 1.1rem;
-  color: #555;
-}
-
-/* TABLA */
-.tabla {
+/* TABLAS */
+.tabla-lista {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 15px;
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  margin-top: 20px;
 }
 
-.tabla th {
-  background: #6c3bb8;
-  color: white;
-  padding: 14px;
-  font-weight: 600;
+.tabla-lista th,
+.tabla-lista td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
 }
 
-.tabla td {
-  padding: 14px;
-  border-bottom: 1px solid #eee;
-}
-
-.tabla tr:hover {
-  background: #f1e8ff;
+.tabla-lista tr:hover {
+  background: #f0e5ff;
   cursor: pointer;
+}
+
+.tabla-lista th {
+  background: #6a1b9a;
+  color: white;
 }
 
 /* MODAL */
@@ -83,43 +57,22 @@ h1, h2 {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0,0,0,0.5);
   justify-content: center;
   align-items: center;
 }
 
 .modal-content {
   background: white;
-  width: 420px;
-  max-width: 90%;
-  padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
-  animation: abrir 0.25s ease;
+  padding: 20px;
+  width: 300px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
 }
 
-@keyframes abrir {
-  from { transform: scale(0.85); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-.close {
+.close-btn {
   float: right;
-  font-size: 1.6rem;
   cursor: pointer;
-  color: #6c3bb8;
-}
-
-.modal-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin: 20px 0;
-}
-
-.resena {
-  background: #faf7ff;
-  border-left: 4px solid #6c3bb8;
-  padding: 12px;
-  border-radius: 8px;
+  font-size: 1.2rem;
+  color: #6a1b9a;
 }
