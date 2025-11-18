@@ -30,6 +30,11 @@
 <!-- PELÍCULAS -->
 <section id="peliculas" class="tab">
   <h2>Películas</h2>
+    <div class="tabs-nav">
+      <button onclick="openTab('inicio', event)">🏠 Inicio</button>
+      <button onclick="openTab('series', event)">📺 Series</button>
+    </div>
+ 
   <table id="tablaPeliculas" class="tabla-lista">
     <thead>
       <tr>
@@ -42,16 +47,19 @@
     <tbody></tbody>
   </table>
   
-  <div class="tabs-nav">
-  <button onclick="openTab('inicio', event)">🏠 Inicio</button>
-  <button onclick="openTab('series', event)">📺 Series</button>
-</div>
+
 
 </section>
 
 <!-- SERIES -->
 <section id="series" class="tab">
   <h2>Series</h2>
+  
+    <div class="tabs-nav">
+      <button onclick="openTab('inicio', event)">🏠 Inicio</button>
+      <button onclick="openTab('peliculas', event)">🎬 Películas</button>
+    </div>
+  
   <table id="tablaSeries" class="tabla-lista">
     <thead>
       <tr>
@@ -64,10 +72,7 @@
     <tbody></tbody>
   </table>
 
-  <div class="tabs-nav">
-  <button onclick="openTab('inicio', event)">🏠 Inicio</button>
-  <button onclick="openTab('peliculas', event)">🎬 Películas</button>
-</div>
+
 
 </section>
 
