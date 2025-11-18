@@ -1,7 +1,17 @@
-/* NAV */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background: #f7f5fc;
+  color: #333;
+}
+
+/* NAV SUPERIOR */
 nav {
   display: flex;
-  background-color: #6a1b9a;
+  background: #6a1b9a;
+  padding: 10px;
+  gap: 10px;
 }
 
 nav button {
@@ -12,12 +22,13 @@ nav button {
   color: white;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: 0.3s;
+  border-radius: 6px;
 }
 
 nav button.active,
 nav button:hover {
-  background-color: #4a148c;
+  background: #4a148c;
 }
 
 /* TABS */
@@ -29,17 +40,66 @@ nav button:hover {
   display: block;
 }
 
+/* --- HOME --- */
+#inicio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  text-align: center;
+}
+
+#inicio h1 {
+  font-size: 2.4rem;
+  margin-bottom: 10px;
+  color: #4a148c;
+  font-weight: 600;
+}
+
+#inicio p {
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  color: #555;
+}
+
+.home-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.big-btn {
+  padding: 25px 40px;
+  font-size: 1.3rem;
+  background: #6a1b9a;
+  color: white;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: 0.25s;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
+.big-btn:hover {
+  background: #4a148c;
+  transform: translateY(-3px);
+}
+
 /* TABLAS */
 .tabla-lista {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .tabla-lista th,
 .tabla-lista td {
   padding: 12px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #eee;
 }
 
 .tabla-lista tr:hover {
