@@ -9,17 +9,26 @@
 
 <body>
 
-<div id="inicio" class="tab visible home">
-  <h1>Videoteca de Fátima</h1>
-  <p class="sub">Explora tu colección en una interfaz moderna y bonita.</p>
+<!-- HOME LINDO -->
+<section id="inicio" class="tab visible home">
+  <h1 class="brand">Videoteca de Fátima</h1>
+  <p class="tagline">Tu colección, organizada con estilo ✨</p>
 
-  <div class="home-buttons">
-    <button class="huge-btn" onclick="openTab('peliculas', event)">Películas</button>
-    <button class="huge-btn" onclick="openTab('series', event)">Series</button>
+  <div class="card-buttons">
+    <div class="card-btn" onclick="openTab('peliculas', event)">
+      <div class="icon">🎬</div>
+      <h3>Películas</h3>
+    </div>
+
+    <div class="card-btn" onclick="openTab('series', event)">
+      <div class="icon">📺</div>
+      <h3>Series</h3>
+    </div>
   </div>
-</div>
+</section>
 
-<div id="peliculas" class="tab">
+<!-- PELÍCULAS -->
+<section id="peliculas" class="tab">
   <h2>Películas</h2>
   <table id="tablaPeliculas" class="tabla-lista">
     <thead>
@@ -32,9 +41,10 @@
     </thead>
     <tbody></tbody>
   </table>
-</div>
+</section>
 
-<div id="series" class="tab">
+<!-- SERIES -->
+<section id="series" class="tab">
   <h2>Series</h2>
   <table id="tablaSeries" class="tabla-lista">
     <thead>
@@ -47,7 +57,7 @@
     </thead>
     <tbody></tbody>
   </table>
-</div>
+</section>
 
 <!-- MODAL -->
 <div id="modal" class="modal">
@@ -56,13 +66,4 @@
     <h3 id="modal-titulo"></h3>
     <p><strong>Año:</strong> <span id="modal-anio"></span></p>
     <p><strong>Calificación:</strong> <span id="modal-calificacion"></span></p>
-    <p><strong>Género:</strong> <span id="modal-genero"></span></p>
-    <p><strong>Tipo:</strong> <span id="modal-tipo"></span></p>
-  </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="script.js"></script>
-
-</body>
-</html>
+    <p><strong>Géne
