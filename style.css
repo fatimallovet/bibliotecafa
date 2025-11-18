@@ -1,88 +1,69 @@
 body {
   margin: 0;
-  padding: 0;
   font-family: "Poppins", sans-serif;
-  background: #f7f5fc;
-  color: #333;
+  background: #0f0f14;
+  color: #eee;
 }
 
-/* NAV SUPERIOR */
-nav {
-  display: flex;
-  background: #6a1b9a;
-  padding: 10px;
-  gap: 10px;
-}
-
-nav button {
-  flex: 1;
-  padding: 15px;
-  border: none;
-  background: none;
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: 0.3s;
-  border-radius: 6px;
-}
-
-nav button.active,
-nav button:hover {
-  background: #4a148c;
-}
-
-/* TABS */
-.tab {
-  display: none;
-  padding: 20px;
-}
-.visible {
-  display: block;
-}
-
-/* --- HOME --- */
-#inicio {
+/* --- HOME MODERNO --- */
+.home {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  min-height: 70vh;
+  align-items: center;
   text-align: center;
+  padding: 40px;
 }
 
-#inicio h1 {
-  font-size: 2.4rem;
-  margin-bottom: 10px;
-  color: #4a148c;
-  font-weight: 600;
+.home h1 {
+  font-size: 3rem;
+  margin: 0;
+  color: #fff;
+  letter-spacing: 1px;
 }
 
-#inicio p {
-  font-size: 1.1rem;
-  margin-bottom: 30px;
-  color: #555;
+.sub {
+  margin: 10px 0 40px;
+  font-size: 1.2rem;
+  color: #b5b5b5;
 }
 
 .home-buttons {
   display: flex;
-  gap: 20px;
+  gap: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-.big-btn {
-  padding: 25px 40px;
-  font-size: 1.3rem;
-  background: #6a1b9a;
-  color: white;
-  border-radius: 12px;
+/* --- BOTONES ENORMES DE VERDAD --- */
+.huge-btn {
+  padding: 35px 60px;
+  font-size: 1.8rem;
+  border-radius: 18px;
   border: none;
   cursor: pointer;
-  transition: 0.25s;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  background: linear-gradient(135deg, #1f1f28, #292933);
+  color: #fff;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  transition: 0.25s ease;
+  min-width: 260px;
 }
 
-.big-btn:hover {
-  background: #4a148c;
-  transform: translateY(-3px);
+.huge-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+  background: linear-gradient(135deg, #2a2a36, #343440);
+}
+
+/* --- TABS GENERALES --- */
+.tab {
+  display: none;
+  padding: 20px;
+}
+
+.visible {
+  display: block;
 }
 
 /* TABLAS */
@@ -90,26 +71,25 @@ nav button:hover {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
-  background: white;
-  border-radius: 10px;
+  background: #1b1b24;
+  color: #eee;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.tabla-lista th,
-.tabla-lista td {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
-}
-
-.tabla-lista tr:hover {
-  background: #f0e5ff;
-  cursor: pointer;
+.tabla-lista th, .tabla-lista td {
+  padding: 14px;
+  border-bottom: 1px solid #2e2e3a;
 }
 
 .tabla-lista th {
-  background: #6a1b9a;
-  color: white;
+  background: #2a2a36;
+  color: #fff;
+}
+
+.tabla-lista tr:hover {
+  background: #3a3a49;
+  cursor: pointer;
 }
 
 /* MODAL */
@@ -117,22 +97,26 @@ nav button:hover {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.6);
   justify-content: center;
   align-items: center;
 }
 
 .modal-content {
-  background: white;
+  background: #1e1e27;
   padding: 20px;
-  width: 300px;
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  width: 320px;
+  border-radius: 14px;
+  color: #eee;
 }
 
 .close-btn {
   float: right;
   cursor: pointer;
-  font-size: 1.2rem;
-  color: #6a1b9a;
+  font-size: 1.3rem;
+  color: #ccc;
+}
+
+.close-btn:hover {
+  color: #fff;
 }

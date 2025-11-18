@@ -9,19 +9,13 @@
 
 <body>
 
-<nav>
-  <button class="active" onclick="openTab('inicio', event)">Inicio</button>
-  <button onclick="openTab('peliculas', event)">Películas</button>
-  <button onclick="openTab('series', event)">Series</button>
-</nav>
-
-<div id="inicio" class="tab visible">
+<div id="inicio" class="tab visible home">
   <h1>Videoteca de Fátima</h1>
-  <p>Explora tu colección de forma moderna, simple y bonita.</p>
+  <p class="sub">Explora tu colección en una interfaz moderna y bonita.</p>
 
   <div class="home-buttons">
-    <button class="big-btn" onclick="openTab('peliculas', event)">🎬 Películas</button>
-    <button class="big-btn" onclick="openTab('series', event)">📺 Series</button>
+    <button class="huge-btn" onclick="openTab('peliculas', event)">Películas</button>
+    <button class="huge-btn" onclick="openTab('series', event)">Series</button>
   </div>
 </div>
 
