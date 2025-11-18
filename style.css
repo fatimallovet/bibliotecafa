@@ -95,6 +95,7 @@ h2 {
 .tabla-lista th, .tabla-lista td {
   padding: 14px;
   border-bottom: 1px solid #eee;
+  text-align: left;
 }
 
 .tabla-lista th {
