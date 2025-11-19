@@ -13,6 +13,8 @@ fetch(URL)
     render(res.data);
   });
 
+
+
 function render(data) {
   const tbMovies = document.querySelector("#tablaPeliculas tbody");
   const tbSeries = document.querySelector("#tablaSeries tbody");
@@ -21,35 +23,65 @@ function render(data) {
   tbSeries.innerHTML = "";
 
   data.forEach(item => {
+    const esPelicula = (item["Serie o Película"] || "").toLowerCase().includes("pel");
     const row = document.createElement("tr");
 
-    row.innerHTML = `
-      <td>${item["Título"] || ""}</td>
-      <td>${item["Año"] || ""}</td>
-      <td>${item["Calificación"] || ""}</td>
-      <td>${item["Género"] || ""}</td>
-      <td>${item["Minutos"] || item["Capítulos"] || ""}</td>
-      <td>${item["Flags"] || ""}</td>
-    `;
-
-    row.addEventListener("click", () => mostrarModal(item));
-
-    if ((item["Serie o Película"] || "").toLowerCase().includes("pel")) {
+    if (esPelicula) {
+      // --- PELÍCULAS ---
+      row.innerHTML = `
+        <td>${item["Título"] || ""}</td>
+        <td>${item["Año"] || ""}</td>
+        <td>${item["Calificación"] || ""}</td>
+        <td>${item["Género"] || ""}</td>
+        <td>${item["Minutos"] || ""}</td>
+        <td>${item["Flags"] || ""}</td>
+      `;
       tbMovies.appendChild(row);
+
     } else {
+      // --- SERIES ---
+      row.innerHTML = `
+        <td>${item["Título"] || ""}</td>
+        <td>${item["Año"] || ""}</td>
+        <td>${item["Calificación"] || ""}</td>
+        <td>${item["Género"] || ""}</td>
+        <td>${item["Capítulos"] || ""}</td>
+        <td>${item["Flags"] || ""}</td>
+      `;
       tbSeries.appendChild(row);
     }
+
+    row.addEventListener("click", () => mostrarModal(item));
   });
 }
 
 /* MODAL */
 function mostrarModal(d) {
-  document.getElementById("modal-titulo").textContent = d["Título"];
-  document.getElementById("modal-anio").textContent = d["Año"];
-  document.getElementById("modal-calificacion").textContent = d["Calificación"];
-  document.getElementById("modal-genero").textContent = d["Género"];
-  document.getElementById("modal-tipo").textContent = d["Serie o Película"];
+  document.getElementById("modal-titulo").textContent = d["Título"] || "";
+  document.getElementById("modal-anio").textContent = d["Año"] || "";
+  document.getElementById("modal-calificacion").textContent = d["Calificación"] || "";
+  document.getElementById("modal-genero").textContent = d["Género"] || "";
+  document.getElementById("modal-tipo").textContent = d["Serie o Película"] || "";
   document.getElementById("modal-flags").textContent = d["Flags"] || "";
+
+  // NUEVOS CAMPOS
+  document.getElementById("modal-duracion").textContent =
+      d["Minutos"] || d["Capítulos"] || "";
+
+  document.getElementById("modal-tono").textContent = d["Tono"] || "";
+  document.getElementById("modal-ritmo").textContent = d["Ritmo"] || "";
+  document.getElementById("modal-publico").textContent = d["Público"] || "";
+  document.getElementById("modal-etiquetas").textContent = d["Etiquetas"] || "";
+  document.getElementById("modal-resena").textContent = d["Reseña"] || "";
+
+  // Si viene link IMDB, lo convertimos en enlace bonito
+  if (d["IMDB"]) {
+    document.getElementById("modal-imdb").innerHTML =
+      `<a href="${d["IMDB"]}" target="_blank">Ver en IMDB</a>`;
+  } else {
+    document.getElementById("modal-imdb").textContent = "";
+  }
+
   document.getElementById("modal").style.display = "flex";
 }
 
