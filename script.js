@@ -82,3 +82,10 @@ function mostrarModal(d, tipo) {
 function cerrarModal() {
   document.getElementById("modal").style.display = "none";
 }
+
+
+/* NAVEGAR ENTRE TABS */
+function openTab(tabId, event) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('visible'));
+  document.getElementById(tabId).classList.add('visible');
+}
