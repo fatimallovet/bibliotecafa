@@ -11,10 +11,12 @@
 
 <!-- HOME LINDO -->
 <section id="inicio" class="tab visible home">
-  <h1 class="brand">Videoteca Fátima</h1>
-  <p class="tagline">Mis recomendaciones de series y pelis, organizadas para que sea fácil encontrar algo que te guste ✨</p>
-  <p class="tagline">En cada una aparece qué calificación le puse, para que te sirva de referencia, pero obvio es bastante subjetiva...</p>
-  
+  <h1 class="brand">Videoteca de Fátima</h1>
+  <p class="tagline">
+    Mis recomendaciones de series y pelis, organizadas para que sea fácil encontrar algo que te guste.
+    La calificación que aparece es la mía, puede ser un poco subjetiva. ✨
+  </p>
+
   <div class="card-buttons">
     <div class="card-btn" onclick="openTab('peliculas', event)">
       <div class="icon">🎬</div>
@@ -31,10 +33,10 @@
 <!-- PELÍCULAS -->
 <section id="peliculas" class="tab">
   <h2>Películas</h2>
-    <div class="tabs-nav">
-      <button onclick="openTab('inicio', event)">🏠 Inicio</button>
-      <button onclick="openTab('series', event)">📺 Series</button>
-    </div>
+  <div class="tabs-nav">
+    <button onclick="openTab('inicio', event)">🏠 Inicio</button>
+    <button onclick="openTab('series', event)">📺 Series</button>
+  </div>
  
   <table id="tablaPeliculas" class="tabla-lista">
     <thead>
@@ -47,19 +49,15 @@
     </thead>
     <tbody></tbody>
   </table>
-  
-
-
 </section>
 
 <!-- SERIES -->
 <section id="series" class="tab">
   <h2>Series</h2>
-  
-    <div class="tabs-nav">
-      <button onclick="openTab('inicio', event)">🏠 Inicio</button>
-      <button onclick="openTab('peliculas', event)">🎬 Películas</button>
-    </div>
+  <div class="tabs-nav">
+    <button onclick="openTab('inicio', event)">🏠 Inicio</button>
+    <button onclick="openTab('peliculas', event)">🎬 Películas</button>
+  </div>
   
   <table id="tablaSeries" class="tabla-lista">
     <thead>
@@ -72,9 +70,6 @@
     </thead>
     <tbody></tbody>
   </table>
-
-
-
 </section>
 
 <!-- MODAL -->
