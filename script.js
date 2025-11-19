@@ -28,6 +28,8 @@ function render(data) {
       <td>${item["Año"] || ""}</td>
       <td>${item["Calificación"] || ""}</td>
       <td>${item["Género"] || ""}</td>
+      <td>${item["Minutos"] || item["Capítulos"] || ""}</td>
+      <td>${item["Flags"] || ""}</td>
     `;
 
     row.addEventListener("click", () => mostrarModal(item));
@@ -47,7 +49,7 @@ function mostrarModal(d) {
   document.getElementById("modal-calificacion").textContent = d["Calificación"];
   document.getElementById("modal-genero").textContent = d["Género"];
   document.getElementById("modal-tipo").textContent = d["Serie o Película"];
-
+  document.getElementById("modal-flags").textContent = d["Flags"] || "";
   document.getElementById("modal").style.display = "flex";
 }
 

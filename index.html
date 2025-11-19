@@ -11,9 +11,9 @@
 
 <!-- HOME LINDO -->
 <section id="inicio" class="tab visible home">
-  <h1 class="brand">Videoteca de Fátima</h1>
+  <h1 class="brand">Videoteca Fátima</h1>
   <p class="tagline">Mis recomendaciones de series y pelis, organizadas para que sea fácil encontrar algo que te guste ✨</p>
-
+  <p class="tagline">En cada una aparece qué calificación le puse, para que te sirva de referencia, pero obvio es bastante subjetiva</p>
   <div class="card-buttons">
     <div class="card-btn" onclick="openTab('peliculas', event)">
       <div class="icon">🎬</div>
@@ -42,9 +42,11 @@
         <th>Año</th>
         <th>Calificación</th>
         <th>Género</th>
+        <th>Minutos</th>
+        <th>Flags</th>
       </tr>
     </thead>
-    <tbody></tbody>
+  <tbody></tbody>
   </table>
   
 
@@ -60,17 +62,19 @@
       <button onclick="openTab('peliculas', event)">🎬 Películas</button>
     </div>
   
-  <table id="tablaSeries" class="tabla-lista">
-    <thead>
-      <tr>
+    <table id="tablaSeries" class="tabla-lista">
+      <thead>
+       <tr>
         <th>Título</th>
         <th>Año</th>
         <th>Calificación</th>
         <th>Género</th>
+        <th>Capítulos</th>
+        <th>Flags</th>
       </tr>
-    </thead>
+      </thead>
     <tbody></tbody>
-  </table>
+    </table>
 
 
 
@@ -85,6 +89,7 @@
     <p><strong>Calificación:</strong> <span id="modal-calificacion"></span></p>
     <p><strong>Género:</strong> <span id="modal-genero"></span></p>
     <p><strong>Tipo:</strong> <span id="modal-tipo"></span></p>
+    <p><strong>Flags:</strong> <span id="modal-flags"></span></p>
   </div>
 </div>
 
