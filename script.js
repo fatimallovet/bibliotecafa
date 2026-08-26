@@ -254,7 +254,7 @@ function crearCard(item, tipo) {
   /* Botón ♡ — no abre modal */
   card.querySelector(".card-deseo-btn").addEventListener("click", function(e) {
     e.stopPropagation();
-    var obj = { titulo: titulo, tipo: label, genero: genero, calif: calif, anio: anioCorto };
+    var obj = { titulo: titulo, tipo: label, genero: genero, calif: calif, anio: anioCorto, poster: poster };
     toggleDeseoItem(obj);
     var ahora = estaEnDeseos(titulo);
     this.textContent = ahora ? "♥" : "♡";
@@ -622,6 +622,17 @@ function _dibujarLineas(ctx, lineas, x, y, lineHeight) {
   return y + lineas.length * lineHeight;
 }
 
+/* Trunca una sola línea con "…" si no cabe en maxWidth (para filas de una sola línea) */
+function _truncarLinea(ctx, texto, maxWidth) {
+  if (!texto) return "";
+  if (ctx.measureText(texto).width <= maxWidth) return texto;
+  var t = texto;
+  while (t.length > 1 && ctx.measureText(t + "…").width > maxWidth) {
+    t = t.slice(0, -1);
+  }
+  return t + "…";
+}
+
 function _redondeado(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x+r, y);
@@ -646,10 +657,10 @@ function _contarFilasChips(ctx, chips, W) {
    El alto del canvas se calcula dinámicamente según el contenido, así que
    nada — ni la reseña ni los flags — queda cortado. */
 function generarImagenFicha(d, forzarSinPoster) {
-  var W = 1080;
-  var posterAltura = 640;
-  var footerAltura = 120;
-  var anchoTexto = W - 96;
+  var W = 760;
+  var posterAltura = 440;
+  var footerAltura = 84;
+  var anchoTexto = W - 72;
 
   var titulo    = campo(d, ["Título","Titulo"]);
   var calif     = campo(d, ["Calificación","Calificacion"]);
@@ -680,7 +691,7 @@ function generarImagenFicha(d, forzarSinPoster) {
        siempre el texto completo (reseña y flags incluidos, sin recortes). */
     var medidor = document.createElement("canvas").getContext("2d");
 
-    medidor.font = "700 56px Poppins, sans-serif";
+    medidor.font = "700 38px Poppins, sans-serif";
     var lineasTitulo = _partirLineas(medidor, titulo, anchoTexto);
 
     var chips = [
@@ -689,27 +700,27 @@ function generarImagenFicha(d, forzarSinPoster) {
       ritmo   ? "⏩ " + ritmo   : "",
       publico ? "👥 " + publico : ""
     ].filter(Boolean);
-    medidor.font = "500 28px Poppins, sans-serif";
+    medidor.font = "500 20px Poppins, sans-serif";
     var filasChips = chips.length ? _contarFilasChips(medidor, chips, W) : 0;
 
-    medidor.font = "italic 400 30px Poppins, sans-serif";
+    medidor.font = "italic 400 21px Poppins, sans-serif";
     var lineasResena = resena ? _partirLineas(medidor, "“" + resena + "”", anchoTexto) : [];
 
-    medidor.font = "600 28px Poppins, sans-serif";
+    medidor.font = "600 20px Poppins, sans-serif";
     var lineasFlags = flags ? _partirLineas(medidor, "⚠️ " + flags, anchoTexto) : [];
 
     var meta = [origen, anio, durVal ? (durVal + " " + durLabel) : ""].filter(Boolean).join("   ·   ");
 
     /* Alto total dinámico */
-    var y = posterAltura + 60;
-    y += lineasTitulo.length * 64 + 26;
-    if (calif) y += 52;
-    if (meta)  y += 56;
-    y += 46; // divisor
-    if (chips.length)        y += filasChips * 60 + 16;
-    if (lineasResena.length) y += 34 + lineasResena.length * 42 + 20;
-    if (lineasFlags.length)  y += 34 + lineasFlags.length * 38;
-    y += 40; // margen antes del footer
+    var y = posterAltura + 42;
+    y += lineasTitulo.length * 46 + 18;
+    if (calif) y += 36;
+    if (meta)  y += 40;
+    y += 32; // divisor
+    if (chips.length)        y += filasChips * 42 + 12;
+    if (lineasResena.length) y += 24 + lineasResena.length * 30 + 14;
+    if (lineasFlags.length)  y += 24 + lineasFlags.length * 27;
+    y += 28; // margen antes del footer
     var H = y + footerAltura;
 
     var canvas = document.createElement("canvas");
@@ -740,83 +751,83 @@ function generarImagenFicha(d, forzarSinPoster) {
       ctx.fillRect(0,0,W,posterAltura);
       ctx.textAlign = "center";
       ctx.globalAlpha = 0.22;
-      ctx.font = "260px sans-serif";
-      ctx.fillText(esPeli ? "🎬" : "📺", W/2, posterAltura/2 + 90);
+      ctx.font = "180px sans-serif";
+      ctx.fillText(esPeli ? "🎬" : "📺", W/2, posterAltura/2 + 62);
       ctx.globalAlpha = 1;
     }
 
     /* Fundido inferior del póster hacia el fondo */
-    var gFundido = ctx.createLinearGradient(0, posterAltura-240, 0, posterAltura);
+    var gFundido = ctx.createLinearGradient(0, posterAltura-160, 0, posterAltura);
     gFundido.addColorStop(0, "rgba(30,28,25,0)");
     gFundido.addColorStop(1, "rgba(30,28,25,1)");
     ctx.fillStyle = gFundido;
-    ctx.fillRect(0, posterAltura-240, W, 240);
+    ctx.fillRect(0, posterAltura-160, W, 160);
 
     /* Etiqueta tipo arriba a la izquierda */
     ctx.textAlign = "left";
     ctx.fillStyle = "rgba(255,255,255,0.95)";
-    ctx.font = "600 30px Poppins, sans-serif";
-    ctx.fillText(esPeli ? "🎬 PELÍCULA" : "📺 SERIE", 48, 64);
+    ctx.font = "600 19px Poppins, sans-serif";
+    ctx.fillText(esPeli ? "🎬 PELÍCULA" : "📺 SERIE", 36, 44);
 
-    var yy = posterAltura + 60;
+    var yy = posterAltura + 42;
 
     /* Título */
     ctx.fillStyle = "#ffffff";
-    ctx.font = "700 56px Poppins, sans-serif";
-    yy = _dibujarLineas(ctx, lineasTitulo, 48, yy, 64);
-    yy += 26;
+    ctx.font = "700 38px Poppins, sans-serif";
+    yy = _dibujarLineas(ctx, lineasTitulo, 36, yy, 46);
+    yy += 18;
 
     /* Calificación */
     if (calif) {
       ctx.fillStyle = "#f3c344";
-      ctx.font = "700 38px Poppins, sans-serif";
-      ctx.fillText("⭐ " + calif + " / 10", 48, yy);
-      yy += 52;
+      ctx.font = "700 26px Poppins, sans-serif";
+      ctx.fillText("⭐ " + calif + " / 10", 36, yy);
+      yy += 36;
     }
 
     /* Meta: origen · año · duración */
     if (meta) {
       ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.font = "400 32px Poppins, sans-serif";
-      ctx.fillText(meta, 48, yy);
-      yy += 56;
+      ctx.font = "400 22px Poppins, sans-serif";
+      ctx.fillText(meta, 36, yy);
+      yy += 40;
     }
 
     /* Línea divisoria */
     ctx.strokeStyle = "rgba(255,255,255,0.15)";
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(48, yy); ctx.lineTo(W-48, yy); ctx.stroke();
-    yy += 46;
+    ctx.beginPath(); ctx.moveTo(36, yy); ctx.lineTo(W-36, yy); ctx.stroke();
+    yy += 32;
 
     /* Chips: género / tono / ritmo / público */
-    ctx.font = "500 28px Poppins, sans-serif";
-    var chipX = 48, chipY = yy, chipAltoLinea = 60;
+    ctx.font = "500 20px Poppins, sans-serif";
+    var chipX = 36, chipY = yy, chipAltoLinea = 42;
     chips.forEach(function(chip) {
       var anchoTexto2 = ctx.measureText(chip).width;
-      var anchoChip   = anchoTexto2 + 44;
-      if (chipX + anchoChip > W - 48) { chipX = 48; chipY += chipAltoLinea; }
+      var anchoChip   = anchoTexto2 + 32;
+      if (chipX + anchoChip > W - 36) { chipX = 36; chipY += chipAltoLinea; }
       ctx.fillStyle = "rgba(255,255,255,0.10)";
-      _redondeado(ctx, chipX, chipY, anchoChip, 46, 23);
+      _redondeado(ctx, chipX, chipY, anchoChip, 32, 16);
       ctx.fill();
       ctx.fillStyle = "rgba(255,255,255,0.9)";
-      ctx.fillText(chip, chipX + 22, chipY + 31);
-      chipX += anchoChip + 16;
+      ctx.fillText(chip, chipX + 16, chipY + 22);
+      chipX += anchoChip + 12;
     });
-    if (chips.length) yy = chipY + chipAltoLinea + 16;
+    if (chips.length) yy = chipY + chipAltoLinea + 12;
 
     /* Reseña — completa, sin truncar */
     if (lineasResena.length) {
       ctx.fillStyle = "rgba(255,255,255,0.85)";
-      ctx.font = "italic 400 30px Poppins, sans-serif";
-      yy = _dibujarLineas(ctx, lineasResena, 48, yy + 34, 42);
-      yy += 20;
+      ctx.font = "italic 400 21px Poppins, sans-serif";
+      yy = _dibujarLineas(ctx, lineasResena, 36, yy + 24, 30);
+      yy += 14;
     }
 
     /* Flags — completos, sin truncar */
     if (lineasFlags.length) {
       ctx.fillStyle = "#e0a05a";
-      ctx.font = "600 28px Poppins, sans-serif";
-      yy = _dibujarLineas(ctx, lineasFlags, 48, yy + 34, 38);
+      ctx.font = "600 20px Poppins, sans-serif";
+      yy = _dibujarLineas(ctx, lineasFlags, 36, yy + 24, 27);
     }
 
     /* Footer con marca y link */
@@ -824,11 +835,11 @@ function generarImagenFicha(d, forzarSinPoster) {
     ctx.fillRect(0, H-footerAltura, W, footerAltura);
     ctx.textAlign = "center";
     ctx.fillStyle = "#ffffff";
-    ctx.font = "600 32px Poppins, sans-serif";
-    ctx.fillText("🎬 Videoteca Fátima", W/2, H-footerAltura/2 - 8);
-    ctx.font = "400 24px Poppins, sans-serif";
+    ctx.font = "600 22px Poppins, sans-serif";
+    ctx.fillText("🎬 Videoteca Fátima", W/2, H-footerAltura/2 - 6);
+    ctx.font = "400 16px Poppins, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,0.85)";
-    ctx.fillText("fatimallovet.github.io/videotecafatima", W/2, H-footerAltura/2 + 26);
+    ctx.fillText("fatimallovet.github.io/videotecafatima", W/2, H-footerAltura/2 + 18);
 
     return new Promise(function(resolve, reject) {
       try {
@@ -844,17 +855,25 @@ function generarImagenFicha(d, forzarSinPoster) {
   });
 }
 
-/* Lista de deseos → imagen (título + tipo + género + calificación de cada uno) */
+/* Lista de deseos → imagen (miniatura + título + tipo + año + género + calificación) */
 function generarImagenLista() {
-  var W = 1080;
-  var filaAltura   = 86;
-  var headerAltura = 210;
-  var footerAltura = 130;
-  var H = headerAltura + (_deseos.length * filaAltura) + footerAltura + 30;
+  var W = 720;
+  var filaAltura   = 84;
+  var headerAltura = 116;
+  var footerAltura = 74;
+  var thumbW = 48, thumbH = 72;
+  var padX = 28;
+
+  var deseos = _deseos.map(_enriquecerDeseo);
+  var H = headerAltura + (deseos.length * filaAltura) + footerAltura + 16;
 
   var fontsListos = (document.fonts && document.fonts.ready) || Promise.resolve();
+  var cargaPosters = Promise.all(deseos.map(function(item) {
+    return item.poster ? _cargarPoster(item.poster).catch(function() { return null; }) : Promise.resolve(null);
+  }));
 
-  return fontsListos.then(function() {
+  return Promise.all([cargaPosters, fontsListos]).then(function(res) {
+    var posters = res[0];
     var canvas = document.createElement("canvas");
     canvas.width = W; canvas.height = H;
     var ctx = canvas.getContext("2d");
@@ -867,22 +886,50 @@ function generarImagenLista() {
 
     ctx.textAlign = "left";
     ctx.fillStyle = "#ffffff";
-    ctx.font = "700 46px Poppins, sans-serif";
-    ctx.fillText("🎬 Mi lista de deseos", 48, 90);
+    ctx.font = "700 30px Poppins, sans-serif";
+    ctx.fillText("🎬 Mi lista de deseos", padX, 54);
     ctx.fillStyle = "rgba(255,255,255,0.65)";
-    ctx.font = "400 28px Poppins, sans-serif";
-    ctx.fillText("Videoteca Fátima  ·  " + _deseos.length + " título" + (_deseos.length === 1 ? "" : "s"), 48, 135);
+    ctx.font = "400 18px Poppins, sans-serif";
+    ctx.fillText("Videoteca Fátima  ·  " + deseos.length + " título" + (deseos.length === 1 ? "" : "s"), padX, 82);
+
+    var textX = padX + thumbW + 16;
+    var anchoDisponible = W - textX - padX;
 
     var y = headerAltura;
-    _deseos.forEach(function(item, i) {
+    deseos.forEach(function(item, i) {
       if (i % 2 === 1) {
         ctx.fillStyle = "rgba(255,255,255,0.045)";
         ctx.fillRect(0, y, W, filaAltura);
       }
+
       var esPeli = item.tipo === "Película" || item.tipo === "Pelicula";
+      var thumbY = y + (filaAltura - thumbH) / 2;
+      var img = posters[i];
+
+      if (img) {
+        var escala = Math.max(thumbW/img.width, thumbH/img.height);
+        var pw = img.width*escala, ph = img.height*escala;
+        var px = padX + (thumbW-pw)/2, py = thumbY + (thumbH-ph)/2;
+        ctx.save();
+        _redondeado(ctx, padX, thumbY, thumbW, thumbH, 7);
+        ctx.clip();
+        ctx.drawImage(img, px, py, pw, ph);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = BANDA_COLORES[claseBanda(item.genero || "")] || "#9aab9e";
+        _redondeado(ctx, padX, thumbY, thumbW, thumbH, 7);
+        ctx.fill();
+        ctx.textAlign = "center";
+        ctx.font = "22px sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.75)";
+        ctx.fillText(esPeli ? "🎬" : "📺", padX + thumbW/2, thumbY + thumbH/2 + 8);
+        ctx.textAlign = "left";
+      }
+
       ctx.fillStyle = "#ffffff";
-      ctx.font = "600 32px Poppins, sans-serif";
-      ctx.fillText((esPeli ? "🎬 " : "📺 ") + item.titulo, 48, y + 38);
+      ctx.font = "600 21px Poppins, sans-serif";
+      var lineaTitulo = _truncarLinea(ctx, (esPeli ? "🎬 " : "📺 ") + item.titulo, anchoDisponible);
+      ctx.fillText(lineaTitulo, textX, y + filaAltura/2 - 6);
 
       var sub = [
         item.anio   ? item.anio : "",
@@ -890,8 +937,8 @@ function generarImagenLista() {
         item.calif  ? "⭐ " + item.calif : ""
       ].filter(Boolean).join("   ·   ");
       ctx.fillStyle = "rgba(255,255,255,0.6)";
-      ctx.font = "400 26px Poppins, sans-serif";
-      ctx.fillText(sub, 48, y + 68);
+      ctx.font = "400 17px Poppins, sans-serif";
+      ctx.fillText(_truncarLinea(ctx, sub, anchoDisponible), textX, y + filaAltura/2 + 20);
 
       y += filaAltura;
     });
@@ -900,16 +947,18 @@ function generarImagenLista() {
     ctx.fillRect(0, H - footerAltura, W, footerAltura);
     ctx.textAlign = "center";
     ctx.fillStyle = "#ffffff";
-    ctx.font = "600 30px Poppins, sans-serif";
-    ctx.fillText("🎬 Videoteca Fátima", W/2, H - footerAltura/2 - 8);
-    ctx.font = "400 24px Poppins, sans-serif";
+    ctx.font = "600 22px Poppins, sans-serif";
+    ctx.fillText("🎬 Videoteca Fátima", W/2, H - footerAltura/2 - 6);
+    ctx.font = "400 16px Poppins, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,0.85)";
-    ctx.fillText("fatimallovet.github.io/videotecafatima", W/2, H - footerAltura/2 + 26);
+    ctx.fillText("fatimallovet.github.io/videotecafatima", W/2, H - footerAltura/2 + 18);
 
     return new Promise(function(resolve, reject) {
-      canvas.toBlob(function(blob) {
-        if (blob) resolve(blob); else reject(new Error("toBlob-vacio"));
-      }, "image/png");
+      try {
+        canvas.toBlob(function(blob) {
+          if (blob) resolve(blob); else reject(new Error("toBlob-vacio"));
+        }, "image/png");
+      } catch (err) { reject(err); }
     });
   });
 }
@@ -969,8 +1018,9 @@ function toggleDeseo() {
   var calif  = d["Calificación"] || d["Calificacion"] || "";
   var anioRaw = d["Año"] || d["Anio"] || "";
   var anio   = (String(anioRaw).match(/\d{4}/) || [""])[0];
+  var poster = campo(d, ["Poster","poster","Póster","póster"]).trim();
 
-  toggleDeseoItem({ titulo: titulo, tipo: tipo, genero: genero, calif: calif, anio: anio });
+  toggleDeseoItem({ titulo: titulo, tipo: tipo, genero: genero, calif: calif, anio: anio, poster: poster });
   actualizarBtnDeseoModal();
 
   /* Sincronizar botón en card visible */
@@ -1018,6 +1068,31 @@ function actualizarFab() {
 }
 
 /* Panel */
+/* Si un registro de la lista de deseos se guardó antes de tener año/poster,
+   completa esos datos buscando el título en el catálogo ya cargado. */
+function _buscarDatoOriginal(titulo) {
+  var todos = dataPeliculas.concat(dataSeries);
+  for (var i = 0; i < todos.length; i++) {
+    if ((todos[i]["Título"] || todos[i]["Titulo"] || "") === titulo) return todos[i];
+  }
+  return null;
+}
+
+function _enriquecerDeseo(item) {
+  if (item.anio && item.poster !== undefined) return item;
+  var orig = _buscarDatoOriginal(item.titulo);
+  if (!orig) return item;
+  var anioOriginal = (String(campo(orig, ["Año","Anio"])).match(/\d{4}/) || [""])[0];
+  return {
+    titulo: item.titulo,
+    tipo:   item.tipo   || (dataPeliculas.indexOf(orig) !== -1 ? "Película" : "Serie"),
+    genero: item.genero || campo(orig, ["Género","Genero"]),
+    calif:  item.calif  || campo(orig, ["Calificación","Calificacion"]),
+    anio:   item.anio   || anioOriginal,
+    poster: (item.poster !== undefined ? item.poster : campo(orig, ["Poster","poster","Póster","póster"]).trim())
+  };
+}
+
 function compartirItem(titulo, e) {
   /* Buscar el item completo en los datos para usar fichaTexto */
   var encontrado = null;
@@ -1049,7 +1124,7 @@ function compartirListaCompleta(e) {
 
   mostrarMenuCompartir(anchor, {
     texto: function() {
-      var lineas = _deseos.map(function(d, i) {
+      var lineas = _deseos.map(_enriquecerDeseo).map(function(d, i) {
         var extra = [];
         if (d.tipo)   extra.push(d.tipo);
         if (d.anio)   extra.push(d.anio);
