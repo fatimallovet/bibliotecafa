@@ -708,11 +708,11 @@ function generarImagenFicha(d, forzarSinPoster) {
 
     /* El póster se muestra completo, a su propia proporción (sin recortar).
        Se calcula su alto a partir del ancho fijo y su proporción real. */
-    var posterW = 300;
+    var posterW = 220;
     var posterH = imgPoster
       ? Math.round(posterW * (imgPoster.height / imgPoster.width))
       : Math.round(posterW * 1.5); // proporción estándar de póster (2:3)
-    posterH = Math.max(280, Math.min(posterH, 560)); // evita proporciones extremas
+    posterH = Math.max(200, Math.min(posterH, 400)); // evita proporciones extremas
 
     /* Canvas de medición: calcula cuánto espacio necesita cada bloque de
        texto ANTES de crear el canvas final, para que el alto total incluya
@@ -731,7 +731,7 @@ function generarImagenFicha(d, forzarSinPoster) {
     medidor.font = "500 20px Poppins, sans-serif";
     var filasChips = chips.length ? _contarFilasChips(medidor, chips, W) : 0;
 
-    medidor.font = "italic 400 21px Poppins, sans-serif";
+    medidor.font = "italic 400 26px Poppins, sans-serif";
     var lineasResena = resena ? _partirLineas(medidor, "“" + resena + "”", anchoTexto) : [];
 
     medidor.font = "600 20px Poppins, sans-serif";
@@ -747,7 +747,7 @@ function generarImagenFicha(d, forzarSinPoster) {
     if (meta)  y += 36;
     y += 32; // divisor
     if (chips.length)        y += filasChips * 42 + 12;
-    if (lineasResena.length) y += 24 + lineasResena.length * 30 + 14;
+    if (lineasResena.length) y += 24 + lineasResena.length * 36 + 14;
     if (lineasFlags.length)  y += 24 + lineasFlags.length * 27;
     y += 28; // margen antes del footer
     var H = y + footerAltura;
@@ -858,8 +858,8 @@ function generarImagenFicha(d, forzarSinPoster) {
     /* Reseña — completa, sin truncar */
     if (lineasResena.length) {
       ctx.fillStyle = "rgba(255,255,255,0.85)";
-      ctx.font = "italic 400 21px Poppins, sans-serif";
-      yy = _dibujarLineas(ctx, lineasResena, padX, yy + 24, 30);
+      ctx.font = "italic 400 26px Poppins, sans-serif";
+      yy = _dibujarLineas(ctx, lineasResena, padX, yy + 24, 36);
       yy += 14;
     }
 
