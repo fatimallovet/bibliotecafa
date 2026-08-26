@@ -451,8 +451,79 @@ function fichaTexto(d) {
   return lineas.join("\n");
 }
 
-function compartirTitulo() {
-  var texto   = fichaTexto(_itemActual);
+function compartirTitulo(e) {
+  var anchor = (e && e.currentTarget) || document.getElementById("modal-deseos-btn");
+  mostrarMenuCompartir(anchor, {
+    texto:  function() { _compartirTextoDirecto(fichaTexto(_itemActual)); },
+    imagen: function() { _compartirImagenFicha(_itemActual); }
+  });
+}
+
+function mostrarToast(msg) {
+  var t = document.getElementById("toast-compartir");
+  t.textContent = msg;
+  t.classList.add("visible");
+  setTimeout(function() { t.classList.remove("visible"); }, 2800);
+}
+
+/* ══════════════════════════════════════
+   MENÚ "COMPARTIR" — texto o imagen
+   ══════════════════════════════════════ */
+var _menuCompartirActivo = null;
+
+function mostrarMenuCompartir(anchorEl, handlers) {
+  cerrarMenuCompartir();
+  if (!anchorEl) { handlers.texto(); return; }
+
+  var menu = document.createElement("div");
+  menu.className = "menu-compartir";
+  menu.innerHTML =
+    '<button class="menu-compartir-op" data-op="texto">📝 Compartir como texto</button>' +
+    '<button class="menu-compartir-op" data-op="imagen">🖼️ Compartir como imagen</button>';
+  document.body.appendChild(menu);
+
+  var rect    = anchorEl.getBoundingClientRect();
+  var top     = rect.bottom + 8;
+  var left    = rect.left;
+  var maxLeft = document.documentElement.clientWidth - menu.offsetWidth - 12;
+  if (left > maxLeft) left = Math.max(12, maxLeft);
+  var maxTop  = window.innerHeight - menu.offsetHeight - 12;
+  if (top > maxTop) top = rect.top - menu.offsetHeight - 8;
+
+  menu.style.top  = top + "px";
+  menu.style.left = left + "px";
+
+  menu.querySelector('[data-op="texto"]').addEventListener("click", function(ev) {
+    ev.stopPropagation();
+    cerrarMenuCompartir();
+    handlers.texto();
+  });
+  menu.querySelector('[data-op="imagen"]').addEventListener("click", function(ev) {
+    ev.stopPropagation();
+    cerrarMenuCompartir();
+    handlers.imagen();
+  });
+
+  _menuCompartirActivo = menu;
+  setTimeout(function() { document.addEventListener("click", _cerrarMenuCompartirFuera); }, 0);
+}
+
+function _cerrarMenuCompartirFuera(e) {
+  if (_menuCompartirActivo && !_menuCompartirActivo.contains(e.target)) cerrarMenuCompartir();
+}
+
+function cerrarMenuCompartir() {
+  if (_menuCompartirActivo) {
+    _menuCompartirActivo.remove();
+    _menuCompartirActivo = null;
+    document.removeEventListener("click", _cerrarMenuCompartirFuera);
+  }
+}
+
+/* ══════════════════════════════════════
+   COMPARTIR — texto directo (share nativo o portapapeles)
+   ══════════════════════════════════════ */
+function _compartirTextoDirecto(texto) {
   var esMobil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   if (esMobil && navigator.share) {
     navigator.share({ text: texto }).catch(function(){});
@@ -461,11 +532,352 @@ function compartirTitulo() {
   }
 }
 
-function mostrarToast(msg) {
-  var t = document.getElementById("toast-compartir");
-  t.textContent = msg;
-  t.classList.add("visible");
-  setTimeout(function() { t.classList.remove("visible"); }, 2800);
+/* ══════════════════════════════════════
+   COMPARTIR — archivo de imagen (share nativo, portapapeles o descarga)
+   ══════════════════════════════════════ */
+function _compartirArchivoImagen(blob, nombreArchivo, textoAlt) {
+  var esMobil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var file    = new File([blob], nombreArchivo, { type: "image/png" });
+
+  if (esMobil && navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({ files: [file], text: textoAlt }).catch(function(err) {
+      if (!err || err.name !== "AbortError") _descargarImagen(blob, nombreArchivo);
+    });
+    return;
+  }
+
+  if (navigator.clipboard && window.ClipboardItem) {
+    navigator.clipboard.write([ new ClipboardItem({ "image/png": blob }) ])
+      .then(function() { mostrarToast("¡Imagen copiada! Pégala donde quieras 🖼️"); })
+      .catch(function() { _descargarImagen(blob, nombreArchivo); });
+  } else {
+    _descargarImagen(blob, nombreArchivo);
+  }
+}
+
+function _descargarImagen(blob, nombreArchivo) {
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = nombreArchivo;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+  mostrarToast("Imagen descargada 📥");
+}
+
+/* ══════════════════════════════════════
+   GENERACIÓN DE IMÁGENES (canvas)
+   ══════════════════════════════════════ */
+var BANDA_COLORES = {
+  "banda-drama":"#7b9e87","banda-comedia":"#e8a87c","banda-thriller":"#6b7fa3",
+  "banda-terror":"#8b6a6a","banda-accion":"#c47d3e","banda-romance":"#c48a9e",
+  "banda-ciencia":"#5b8fa8","banda-animacion":"#80b5a0","banda-doc":"#a89860",
+  "banda-crimen":"#7a6e8a","banda-historia":"#8a7a5a","banda-otros":"#9aab9e"
+};
+
+function _cargarImagen(url) {
+  return new Promise(function(resolve, reject) {
+    var img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload  = function() { resolve(img); };
+    img.onerror = function() { reject(new Error("no-image")); };
+    img.src = url;
+  });
+}
+
+/* Envuelve texto en varias líneas dentro de maxWidth. Si excede maxLineas,
+   corta y agrega "…" en la última línea visible. Devuelve el nuevo y (alto usado). */
+function _envolverTexto(ctx, texto, x, y, maxWidth, lineHeight, maxLineas) {
+  var palabras = String(texto).split(" ");
+  var linea = "", lineas = [];
+  for (var i = 0; i < palabras.length; i++) {
+    var prueba = linea + palabras[i] + " ";
+    if (ctx.measureText(prueba).width > maxWidth && linea !== "") {
+      lineas.push(linea.trim());
+      linea = palabras[i] + " ";
+    } else {
+      linea = prueba;
+    }
+  }
+  if (linea.trim()) lineas.push(linea.trim());
+
+  var truncado = false;
+  if (maxLineas && lineas.length > maxLineas) {
+    lineas = lineas.slice(0, maxLineas);
+    truncado = true;
+  }
+  lineas.forEach(function(l, idx) {
+    var txt = (truncado && idx === lineas.length - 1) ? l.replace(/\s+\S*$/, "") + "…" : l;
+    ctx.fillText(txt, x, y + idx * lineHeight);
+  });
+  return y + lineas.length * lineHeight;
+}
+
+function _redondeado(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y,   x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x,   y+h, r);
+  ctx.arcTo(x,   y+h, x,   y,   r);
+  ctx.arcTo(x,   y,   x+w, y,   r);
+  ctx.closePath();
+}
+
+/* Ficha individual → imagen (póster + toda la info + link a la videoteca) */
+function generarImagenFicha(d, forzarSinPoster) {
+  var W = 1080, H = 1600;
+  var posterAltura = 640;
+
+  var titulo    = campo(d, ["Título","Titulo"]);
+  var calif     = campo(d, ["Calificación","Calificacion"]);
+  var origen    = campo(d, ["Origen"]);
+  var anio      = campo(d, ["Año","Anio"]);
+  var esPeli    = d["Tipo"] === "Pelicula";
+  var durVal    = esPeli ? campo(d, ["Minutos"]) : campo(d, ["Capítulos","Capitulos"]);
+  var durLabel  = esPeli ? "min" : "caps";
+  var genero    = campo(d, ["Género","Genero"]);
+  var tono      = campo(d, ["Tono"]);
+  var ritmo     = campo(d, ["Ritmo"]);
+  var publico   = campo(d, ["Público","Publico"]);
+  var flags     = campo(d, ["Flags"]);
+  var resena    = campo(d, ["Reseña","Resena"]);
+  var poster    = campo(d, ["Poster","poster","Póster","póster"]).trim();
+  var colorBanda = BANDA_COLORES[claseBanda(genero)] || "#9aab9e";
+
+  var cargaPoster = (poster && !forzarSinPoster)
+    ? _cargarImagen(poster).catch(function() { return null; })
+    : Promise.resolve(null);
+  var fontsListos = (document.fonts && document.fonts.ready) || Promise.resolve();
+
+  return Promise.all([cargaPoster, fontsListos]).then(function(res) {
+    var imgPoster = res[0];
+    var canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext("2d");
+
+    /* Fondo general (mismo gradiente charcoal del banner del modal) */
+    var gFondo = ctx.createLinearGradient(0,0,0,H);
+    gFondo.addColorStop(0, "#3a3833");
+    gFondo.addColorStop(1, "#1e1c19");
+    ctx.fillStyle = gFondo;
+    ctx.fillRect(0,0,W,H);
+
+    /* Póster o banda de color */
+    if (imgPoster) {
+      var escala = Math.max(W / imgPoster.width, posterAltura / imgPoster.height);
+      var pw = imgPoster.width * escala, ph = imgPoster.height * escala;
+      var px = (W - pw)/2, py = (posterAltura - ph)/2;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0,0,W,posterAltura); ctx.clip();
+      ctx.drawImage(imgPoster, px, py, pw, ph);
+      ctx.restore();
+    } else {
+      var gBanda = ctx.createLinearGradient(0,0,W,posterAltura);
+      gBanda.addColorStop(0, colorBanda);
+      gBanda.addColorStop(1, "#232323");
+      ctx.fillStyle = gBanda;
+      ctx.fillRect(0,0,W,posterAltura);
+      ctx.textAlign = "center";
+      ctx.globalAlpha = 0.22;
+      ctx.font = "260px sans-serif";
+      ctx.fillText(esPeli ? "🎬" : "📺", W/2, posterAltura/2 + 90);
+      ctx.globalAlpha = 1;
+    }
+
+    /* Fundido inferior del póster hacia el fondo */
+    var gFundido = ctx.createLinearGradient(0, posterAltura-240, 0, posterAltura);
+    gFundido.addColorStop(0, "rgba(30,28,25,0)");
+    gFundido.addColorStop(1, "rgba(30,28,25,1)");
+    ctx.fillStyle = gFundido;
+    ctx.fillRect(0, posterAltura-240, W, 240);
+
+    /* Etiqueta tipo arriba a la izquierda */
+    ctx.textAlign = "left";
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.font = "600 30px Poppins, sans-serif";
+    ctx.fillText(esPeli ? "🎬 PELÍCULA" : "📺 SERIE", 48, 64);
+
+    var y = posterAltura + 60;
+
+    /* Título */
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 56px Poppins, sans-serif";
+    y = _envolverTexto(ctx, titulo, 48, y, W-96, 64, 2);
+    y += 26;
+
+    /* Calificación */
+    if (calif) {
+      ctx.fillStyle = "#f3c344";
+      ctx.font = "700 38px Poppins, sans-serif";
+      ctx.fillText("⭐ " + calif + " / 10", 48, y);
+      y += 52;
+    }
+
+    /* Meta: origen · año · duración */
+    var meta = [origen, anio, durVal ? (durVal + " " + durLabel) : ""].filter(Boolean).join("   ·   ");
+    if (meta) {
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.font = "400 32px Poppins, sans-serif";
+      ctx.fillText(meta, 48, y);
+      y += 56;
+    }
+
+    /* Línea divisoria */
+    ctx.strokeStyle = "rgba(255,255,255,0.15)";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(48, y); ctx.lineTo(W-48, y); ctx.stroke();
+    y += 46;
+
+    /* Chips: género / tono / ritmo / público */
+    var chips = [
+      genero  ? "🎭 " + genero  : "",
+      tono    ? "🎨 " + tono    : "",
+      ritmo   ? "⏩ " + ritmo   : "",
+      publico ? "👥 " + publico : ""
+    ].filter(Boolean);
+
+    ctx.font = "500 28px Poppins, sans-serif";
+    var chipX = 48, chipY = y, chipAltoLinea = 60;
+    chips.forEach(function(chip) {
+      var anchoTexto = ctx.measureText(chip).width;
+      var anchoChip  = anchoTexto + 44;
+      if (chipX + anchoChip > W - 48) { chipX = 48; chipY += chipAltoLinea; }
+      ctx.fillStyle = "rgba(255,255,255,0.10)";
+      _redondeado(ctx, chipX, chipY, anchoChip, 46, 23);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.9)";
+      ctx.fillText(chip, chipX + 22, chipY + 31);
+      chipX += anchoChip + 16;
+    });
+    y = chipY + chipAltoLinea + 16;
+
+    /* Reseña */
+    if (resena) {
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.font = "italic 400 30px Poppins, sans-serif";
+      y = _envolverTexto(ctx, "“" + resena + "”", 48, y+34, W-96, 42, 3);
+      y += 20;
+    }
+
+    /* Flags */
+    if (flags) {
+      ctx.fillStyle = "#e0a05a";
+      ctx.font = "600 28px Poppins, sans-serif";
+      y = _envolverTexto(ctx, "⚠️ " + flags, 48, y+34, W-96, 38, 1);
+    }
+
+    /* Footer con marca y link */
+    var footerAltura = 120;
+    ctx.fillStyle = "#556b5d";
+    ctx.fillRect(0, H-footerAltura, W, footerAltura);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "600 32px Poppins, sans-serif";
+    ctx.fillText("🎬 Videoteca Fátima", W/2, H-footerAltura/2 - 8);
+    ctx.font = "400 24px Poppins, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fillText("fatimallovet.github.io/videotecafatima", W/2, H-footerAltura/2 + 26);
+
+    return new Promise(function(resolve, reject) {
+      try {
+        canvas.toBlob(function(blob) {
+          if (blob) resolve(blob); else reject(new Error("toBlob-vacio"));
+        }, "image/png");
+      } catch (err) { reject(err); }
+    });
+  }).catch(function(err) {
+    /* Si el póster deja el canvas "contaminado" (CORS), reintenta sin él */
+    if (!forzarSinPoster) return generarImagenFicha(d, true);
+    throw err;
+  });
+}
+
+/* Lista de deseos → imagen (título + tipo + género + calificación de cada uno) */
+function generarImagenLista() {
+  var W = 1080;
+  var filaAltura   = 86;
+  var headerAltura = 210;
+  var footerAltura = 130;
+  var H = headerAltura + (_deseos.length * filaAltura) + footerAltura + 30;
+
+  var fontsListos = (document.fonts && document.fonts.ready) || Promise.resolve();
+
+  return fontsListos.then(function() {
+    var canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext("2d");
+
+    var gFondo = ctx.createLinearGradient(0,0,0,H);
+    gFondo.addColorStop(0, "#3a3833");
+    gFondo.addColorStop(1, "#1e1c19");
+    ctx.fillStyle = gFondo;
+    ctx.fillRect(0,0,W,H);
+
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 46px Poppins, sans-serif";
+    ctx.fillText("🎬 Mi lista de deseos", 48, 90);
+    ctx.fillStyle = "rgba(255,255,255,0.65)";
+    ctx.font = "400 28px Poppins, sans-serif";
+    ctx.fillText("Videoteca Fátima  ·  " + _deseos.length + " título" + (_deseos.length === 1 ? "" : "s"), 48, 135);
+
+    var y = headerAltura;
+    _deseos.forEach(function(item, i) {
+      if (i % 2 === 1) {
+        ctx.fillStyle = "rgba(255,255,255,0.045)";
+        ctx.fillRect(0, y, W, filaAltura);
+      }
+      var esPeli = item.tipo === "Película" || item.tipo === "Pelicula";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "600 32px Poppins, sans-serif";
+      ctx.fillText((esPeli ? "🎬 " : "📺 ") + item.titulo, 48, y + 38);
+
+      var sub = [
+        item.genero ? item.genero.split(",")[0].trim() : "",
+        item.calif  ? "⭐ " + item.calif : ""
+      ].filter(Boolean).join("   ·   ");
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.font = "400 26px Poppins, sans-serif";
+      ctx.fillText(sub, 48, y + 68);
+
+      y += filaAltura;
+    });
+
+    ctx.fillStyle = "#556b5d";
+    ctx.fillRect(0, H - footerAltura, W, footerAltura);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "600 30px Poppins, sans-serif";
+    ctx.fillText("🎬 Videoteca Fátima", W/2, H - footerAltura/2 - 8);
+    ctx.font = "400 24px Poppins, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fillText("fatimallovet.github.io/videotecafatima", W/2, H - footerAltura/2 + 26);
+
+    return new Promise(function(resolve, reject) {
+      canvas.toBlob(function(blob) {
+        if (blob) resolve(blob); else reject(new Error("toBlob-vacio"));
+      }, "image/png");
+    });
+  });
+}
+
+function _compartirImagenFicha(d) {
+  generarImagenFicha(d).then(function(blob) {
+    var nombre = (campo(d, ["Título","Titulo"]) || "ficha").replace(/[^\w\-]+/g, "_") + ".png";
+    var textoAlt = "🎬 " + campo(d, ["Título","Titulo"]) + " — Videoteca Fátima\nhttps://fatimallovet.github.io/videotecafatima/";
+    _compartirArchivoImagen(blob, nombre, textoAlt);
+  }).catch(function() {
+    mostrarToast("No se pudo generar la imagen 😕");
+  });
+}
+
+function _compartirImagenLista() {
+  if (_deseos.length === 0) return;
+  generarImagenLista().then(function(blob) {
+    var textoAlt = "🎬 Mi lista de deseos — Videoteca Fátima\nhttps://fatimallovet.github.io/videotecafatima/";
+    _compartirArchivoImagen(blob, "mi-lista-videoteca.png", textoAlt);
+  }).catch(function() {
+    mostrarToast("No se pudo generar la imagen 😕");
+  });
 }
 
 /* ══════════════════════════════════════
@@ -550,44 +962,50 @@ function actualizarFab() {
 }
 
 /* Panel */
-function compartirItem(titulo) {
+function compartirItem(titulo, e) {
   /* Buscar el item completo en los datos para usar fichaTexto */
   var encontrado = null;
   dataPeliculas.concat(dataSeries).forEach(function(item) {
     if ((item["Título"] || item["Titulo"] || "") === titulo) encontrado = item;
   });
 
-  var texto;
+  var d = null;
   if (encontrado) {
-    /* Necesitamos saber el Tipo; buscamos en cuál lista estaba */
     var esPeli = dataPeliculas.some(function(i) { return (i["Título"]||i["Titulo"]||"") === titulo; });
-    texto = fichaTexto(Object.assign({}, encontrado, { Tipo: esPeli ? "Pelicula" : "Serie" }));
-  } else {
-    texto = "🎬 " + titulo + "\n— Videoteca Fátima\nhttps://fatimallovet.github.io/videotecafatima/";
+    d = Object.assign({}, encontrado, { Tipo: esPeli ? "Pelicula" : "Serie" });
   }
 
-  var esMobil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (esMobil && navigator.share) {
-    navigator.share({ text: texto }).catch(function(){});
-  } else {
-    _copiarAlPortapapeles(texto);
-  }
+  var textoFallback = "🎬 " + titulo + "\n— Videoteca Fátima\nhttps://fatimallovet.github.io/videotecafatima/";
+  var anchor = e ? e.currentTarget : null;
+
+  mostrarMenuCompartir(anchor, {
+    texto:  function() { _compartirTextoDirecto(d ? fichaTexto(d) : textoFallback); },
+    imagen: function() {
+      if (d) _compartirImagenFicha(d);
+      else mostrarToast("No encontré los datos completos de este título 😕");
+    }
+  });
 }
 
-function compartirListaCompleta() {
+function compartirListaCompleta(e) {
   if (_deseos.length === 0) return;
-  var lineas = _deseos.map(function(d, i) {
-    return (i+1) + ". " + d.titulo + (d.tipo ? " (" + d.tipo + ")" : "");
+  var anchor = (e && e.currentTarget) || document.querySelector(".deseos-compartir-lista-btn");
+
+  mostrarMenuCompartir(anchor, {
+    texto: function() {
+      var lineas = _deseos.map(function(d, i) {
+        var extra = [];
+        if (d.tipo)   extra.push(d.tipo);
+        if (d.genero) extra.push(d.genero.split(",")[0].trim());
+        return (i+1) + ". " + d.titulo + (extra.length ? " (" + extra.join(" · ") + ")" : "");
+      });
+      var texto = "🎬 Mi lista de deseos — Videoteca Fátima\n\n" +
+                  lineas.join("\n") +
+                  "\n\nhttps://fatimallovet.github.io/videotecafatima/";
+      _compartirTextoDirecto(texto);
+    },
+    imagen: function() { _compartirImagenLista(); }
   });
-  var texto = "🎬 Mi lista de deseos — Videoteca Fátima\n\n" +
-              lineas.join("\n") +
-              "\n\nhttps://fatimallovet.github.io/videotecafatima/";
-  var esMobil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (esMobil && navigator.share) {
-    navigator.share({ text: texto }).catch(function(){});
-  } else {
-    _copiarAlPortapapeles(texto);
-  }
 }
 
 function _copiarAlPortapapeles(texto) {
@@ -643,8 +1061,8 @@ function renderPanelDeseos() {
       if (_tituloActual === item.titulo) actualizarBtnDeseoModal();
     });
 
-    row.querySelector(".deseo-compartir-item").addEventListener("click", function() {
-      compartirItem(item.titulo);
+    row.querySelector(".deseo-compartir-item").addEventListener("click", function(e) {
+      compartirItem(item.titulo, e);
     });
 
     lista.appendChild(row);

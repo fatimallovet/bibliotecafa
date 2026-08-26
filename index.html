@@ -316,7 +316,7 @@
       <a id="modal-imdb" class="modal-imdb-link" href="" target="_blank">🎞️ Ver ficha en IMDB</a>
 
       <div class="modal-acciones">
-        <button class="modal-compartir-btn" onclick="compartirTitulo()">🔗 Compartir</button>
+        <button class="modal-compartir-btn" onclick="compartirTitulo(event)">🔗 Compartir</button>
         <button class="modal-deseos-btn" id="modal-deseos-btn" onclick="toggleDeseo()">♡ Guardar</button>
       </div>
     </div>
@@ -337,7 +337,7 @@
   </div>
   <div id="deseos-lista" class="deseos-lista"></div>
   <div class="deseos-footer">
-    <button class="deseos-compartir-lista-btn" onclick="compartirListaCompleta()">↗ Compartir lista</button>
+    <button class="deseos-compartir-lista-btn" onclick="compartirListaCompleta(event)">↗ Compartir lista</button>
     <button class="deseos-vaciar-btn" onclick="vaciarDeseos()">🗑 Vaciar</button>
   </div>
 </div>

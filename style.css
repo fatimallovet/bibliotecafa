@@ -2179,3 +2179,41 @@ h2 {
     padding-right: 12px;
   }
 }
+
+/* ══════════════════════════════════════
+   MENÚ "COMPARTIR" (texto / imagen)
+   ══════════════════════════════════════ */
+.menu-compartir {
+  position: fixed;
+  z-index: 10000;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.24);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  min-width: 216px;
+  animation: menuCompartirIn 0.15s ease-out;
+}
+
+.menu-compartir-op {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 9px;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.92rem;
+  color: #2a2a2a;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.menu-compartir-op:hover { background: #f2efe9; }
+
+@keyframes menuCompartirIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
