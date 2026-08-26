@@ -2183,17 +2183,35 @@ h2 {
 /* ══════════════════════════════════════
    MENÚ "COMPARTIR" (texto / imagen)
    ══════════════════════════════════════ */
-.menu-compartir {
+.menu-compartir-fondo {
   position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
   z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: menuCompartirFondoIn 0.15s ease-out;
+}
+
+.menu-compartir {
   background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.24);
-  padding: 6px;
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.28);
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  min-width: 216px;
-  animation: menuCompartirIn 0.15s ease-out;
+  width: 100%;
+  max-width: 420px;
+  animation: menuCompartirSubir 0.18s ease-out;
+}
+
+.menu-compartir-titulo {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #8a8a8a;
+  padding: 10px 14px 4px;
 }
 
 .menu-compartir-op {
@@ -2203,17 +2221,42 @@ h2 {
   background: none;
   border: none;
   text-align: left;
-  padding: 12px 14px;
-  border-radius: 9px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
   font-family: "Poppins", sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.98rem;
   color: #2a2a2a;
   cursor: pointer;
   transition: background 0.15s ease;
 }
 .menu-compartir-op:hover { background: #f2efe9; }
 
-@keyframes menuCompartirIn {
-  from { opacity: 0; transform: translateY(-6px); }
+.menu-compartir-cancelar {
+  margin-top: 6px;
+  background: #f2efe9;
+  border: none;
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #556b5d;
+  cursor: pointer;
+}
+.menu-compartir-cancelar:hover { background: #e8e3d8; }
+
+@media (min-width: 640px) {
+  .menu-compartir-fondo { align-items: center; }
+  .menu-compartir { border-radius: 18px; }
+}
+
+@keyframes menuCompartirFondoIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes menuCompartirSubir {
+  from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 }

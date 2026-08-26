@@ -254,7 +254,7 @@ function crearCard(item, tipo) {
   /* Botón ♡ — no abre modal */
   card.querySelector(".card-deseo-btn").addEventListener("click", function(e) {
     e.stopPropagation();
-    var obj = { titulo: titulo, tipo: label, genero: genero, calif: calif };
+    var obj = { titulo: titulo, tipo: label, genero: genero, calif: calif, anio: anioCorto };
     toggleDeseoItem(obj);
     var ahora = estaEnDeseos(titulo);
     this.textContent = ahora ? "♥" : "♡";
@@ -468,30 +468,31 @@ function mostrarToast(msg) {
 
 /* ══════════════════════════════════════
    MENÚ "COMPARTIR" — texto o imagen
+   Overlay centrado (no depende de la posición de ningún botón,
+   así siempre queda visible por encima del modal / panel de deseos).
    ══════════════════════════════════════ */
-var _menuCompartirActivo = null;
+var _menuCompartirFondo = null;
 
 function mostrarMenuCompartir(anchorEl, handlers) {
   cerrarMenuCompartir();
-  if (!anchorEl) { handlers.texto(); return; }
+
+  var fondo = document.createElement("div");
+  fondo.className = "menu-compartir-fondo";
 
   var menu = document.createElement("div");
   menu.className = "menu-compartir";
   menu.innerHTML =
-    '<button class="menu-compartir-op" data-op="texto">📝 Compartir como texto</button>' +
-    '<button class="menu-compartir-op" data-op="imagen">🖼️ Compartir como imagen</button>';
-  document.body.appendChild(menu);
+    '<div class="menu-compartir-titulo">¿Cómo quieres compartir?</div>' +
+    '<button class="menu-compartir-op" data-op="texto">📝 Como texto</button>' +
+    '<button class="menu-compartir-op" data-op="imagen">🖼️ Como imagen</button>' +
+    '<button class="menu-compartir-cancelar" data-op="cancelar">Cancelar</button>';
 
-  var rect    = anchorEl.getBoundingClientRect();
-  var top     = rect.bottom + 8;
-  var left    = rect.left;
-  var maxLeft = document.documentElement.clientWidth - menu.offsetWidth - 12;
-  if (left > maxLeft) left = Math.max(12, maxLeft);
-  var maxTop  = window.innerHeight - menu.offsetHeight - 12;
-  if (top > maxTop) top = rect.top - menu.offsetHeight - 8;
+  fondo.appendChild(menu);
+  document.body.appendChild(fondo);
 
-  menu.style.top  = top + "px";
-  menu.style.left = left + "px";
+  fondo.addEventListener("click", function(ev) {
+    if (ev.target === fondo) cerrarMenuCompartir();
+  });
 
   menu.querySelector('[data-op="texto"]').addEventListener("click", function(ev) {
     ev.stopPropagation();
@@ -503,20 +504,18 @@ function mostrarMenuCompartir(anchorEl, handlers) {
     cerrarMenuCompartir();
     handlers.imagen();
   });
+  menu.querySelector('[data-op="cancelar"]').addEventListener("click", function(ev) {
+    ev.stopPropagation();
+    cerrarMenuCompartir();
+  });
 
-  _menuCompartirActivo = menu;
-  setTimeout(function() { document.addEventListener("click", _cerrarMenuCompartirFuera); }, 0);
-}
-
-function _cerrarMenuCompartirFuera(e) {
-  if (_menuCompartirActivo && !_menuCompartirActivo.contains(e.target)) cerrarMenuCompartir();
+  _menuCompartirFondo = fondo;
 }
 
 function cerrarMenuCompartir() {
-  if (_menuCompartirActivo) {
-    _menuCompartirActivo.remove();
-    _menuCompartirActivo = null;
-    document.removeEventListener("click", _cerrarMenuCompartirFuera);
+  if (_menuCompartirFondo) {
+    _menuCompartirFondo.remove();
+    _menuCompartirFondo = null;
   }
 }
 
@@ -584,9 +583,25 @@ function _cargarImagen(url) {
   });
 }
 
-/* Envuelve texto en varias líneas dentro de maxWidth. Si excede maxLineas,
-   corta y agrega "…" en la última línea visible. Devuelve el nuevo y (alto usado). */
-function _envolverTexto(ctx, texto, x, y, maxWidth, lineHeight, maxLineas) {
+/* TMDB no siempre manda las cabeceras CORS necesarias para poder "leer"
+   la imagen desde un canvas (es inconsistente según su CDN). Para que el
+   póster SIEMPRE se pueda incluir en la imagen a compartir, la pedimos a
+   través de images.weserv.nl, un proxy público que sí agrega esas cabeceras.
+   Si por lo que sea el proxy fallara, se intenta cargar la URL original. */
+function _urlProxyCORS(url) {
+  var sinProtocolo = url.replace(/^https?:\/\//, "");
+  return "https://images.weserv.nl/?url=" + encodeURIComponent(sinProtocolo);
+}
+
+function _cargarPoster(url) {
+  return _cargarImagen(_urlProxyCORS(url)).catch(function() {
+    return _cargarImagen(url);
+  });
+}
+
+/* Parte un texto en líneas que caben en maxWidth. No trunca: devuelve
+   todas las líneas necesarias para mostrar el texto completo. */
+function _partirLineas(ctx, texto, maxWidth) {
   var palabras = String(texto).split(" ");
   var linea = "", lineas = [];
   for (var i = 0; i < palabras.length; i++) {
@@ -599,16 +614,11 @@ function _envolverTexto(ctx, texto, x, y, maxWidth, lineHeight, maxLineas) {
     }
   }
   if (linea.trim()) lineas.push(linea.trim());
+  return lineas;
+}
 
-  var truncado = false;
-  if (maxLineas && lineas.length > maxLineas) {
-    lineas = lineas.slice(0, maxLineas);
-    truncado = true;
-  }
-  lineas.forEach(function(l, idx) {
-    var txt = (truncado && idx === lineas.length - 1) ? l.replace(/\s+\S*$/, "") + "…" : l;
-    ctx.fillText(txt, x, y + idx * lineHeight);
-  });
+function _dibujarLineas(ctx, lineas, x, y, lineHeight) {
+  lineas.forEach(function(l, idx) { ctx.fillText(l, x, y + idx * lineHeight); });
   return y + lineas.length * lineHeight;
 }
 
@@ -622,10 +632,24 @@ function _redondeado(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-/* Ficha individual → imagen (póster + toda la info + link a la videoteca) */
+function _contarFilasChips(ctx, chips, W) {
+  var chipX = 48, filas = 1;
+  chips.forEach(function(chip) {
+    var anchoChip = ctx.measureText(chip).width + 44;
+    if (chipX + anchoChip > W - 48) { chipX = 48; filas++; }
+    chipX += anchoChip + 16;
+  });
+  return filas;
+}
+
+/* Ficha individual → imagen (póster + toda la info completa + link a la videoteca).
+   El alto del canvas se calcula dinámicamente según el contenido, así que
+   nada — ni la reseña ni los flags — queda cortado. */
 function generarImagenFicha(d, forzarSinPoster) {
-  var W = 1080, H = 1600;
+  var W = 1080;
   var posterAltura = 640;
+  var footerAltura = 120;
+  var anchoTexto = W - 96;
 
   var titulo    = campo(d, ["Título","Titulo"]);
   var calif     = campo(d, ["Calificación","Calificacion"]);
@@ -644,12 +668,50 @@ function generarImagenFicha(d, forzarSinPoster) {
   var colorBanda = BANDA_COLORES[claseBanda(genero)] || "#9aab9e";
 
   var cargaPoster = (poster && !forzarSinPoster)
-    ? _cargarImagen(poster).catch(function() { return null; })
+    ? _cargarPoster(poster).catch(function() { return null; })
     : Promise.resolve(null);
   var fontsListos = (document.fonts && document.fonts.ready) || Promise.resolve();
 
   return Promise.all([cargaPoster, fontsListos]).then(function(res) {
     var imgPoster = res[0];
+
+    /* Canvas de medición: calcula cuánto espacio necesita cada bloque de
+       texto ANTES de crear el canvas final, para que el alto total incluya
+       siempre el texto completo (reseña y flags incluidos, sin recortes). */
+    var medidor = document.createElement("canvas").getContext("2d");
+
+    medidor.font = "700 56px Poppins, sans-serif";
+    var lineasTitulo = _partirLineas(medidor, titulo, anchoTexto);
+
+    var chips = [
+      genero  ? "🎭 " + genero  : "",
+      tono    ? "🎨 " + tono    : "",
+      ritmo   ? "⏩ " + ritmo   : "",
+      publico ? "👥 " + publico : ""
+    ].filter(Boolean);
+    medidor.font = "500 28px Poppins, sans-serif";
+    var filasChips = chips.length ? _contarFilasChips(medidor, chips, W) : 0;
+
+    medidor.font = "italic 400 30px Poppins, sans-serif";
+    var lineasResena = resena ? _partirLineas(medidor, "“" + resena + "”", anchoTexto) : [];
+
+    medidor.font = "600 28px Poppins, sans-serif";
+    var lineasFlags = flags ? _partirLineas(medidor, "⚠️ " + flags, anchoTexto) : [];
+
+    var meta = [origen, anio, durVal ? (durVal + " " + durLabel) : ""].filter(Boolean).join("   ·   ");
+
+    /* Alto total dinámico */
+    var y = posterAltura + 60;
+    y += lineasTitulo.length * 64 + 26;
+    if (calif) y += 52;
+    if (meta)  y += 56;
+    y += 46; // divisor
+    if (chips.length)        y += filasChips * 60 + 16;
+    if (lineasResena.length) y += 34 + lineasResena.length * 42 + 20;
+    if (lineasFlags.length)  y += 34 + lineasFlags.length * 38;
+    y += 40; // margen antes del footer
+    var H = y + footerAltura;
+
     var canvas = document.createElement("canvas");
     canvas.width = W; canvas.height = H;
     var ctx = canvas.getContext("2d");
@@ -696,50 +758,42 @@ function generarImagenFicha(d, forzarSinPoster) {
     ctx.font = "600 30px Poppins, sans-serif";
     ctx.fillText(esPeli ? "🎬 PELÍCULA" : "📺 SERIE", 48, 64);
 
-    var y = posterAltura + 60;
+    var yy = posterAltura + 60;
 
     /* Título */
     ctx.fillStyle = "#ffffff";
     ctx.font = "700 56px Poppins, sans-serif";
-    y = _envolverTexto(ctx, titulo, 48, y, W-96, 64, 2);
-    y += 26;
+    yy = _dibujarLineas(ctx, lineasTitulo, 48, yy, 64);
+    yy += 26;
 
     /* Calificación */
     if (calif) {
       ctx.fillStyle = "#f3c344";
       ctx.font = "700 38px Poppins, sans-serif";
-      ctx.fillText("⭐ " + calif + " / 10", 48, y);
-      y += 52;
+      ctx.fillText("⭐ " + calif + " / 10", 48, yy);
+      yy += 52;
     }
 
     /* Meta: origen · año · duración */
-    var meta = [origen, anio, durVal ? (durVal + " " + durLabel) : ""].filter(Boolean).join("   ·   ");
     if (meta) {
       ctx.fillStyle = "rgba(255,255,255,0.7)";
       ctx.font = "400 32px Poppins, sans-serif";
-      ctx.fillText(meta, 48, y);
-      y += 56;
+      ctx.fillText(meta, 48, yy);
+      yy += 56;
     }
 
     /* Línea divisoria */
     ctx.strokeStyle = "rgba(255,255,255,0.15)";
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(48, y); ctx.lineTo(W-48, y); ctx.stroke();
-    y += 46;
+    ctx.beginPath(); ctx.moveTo(48, yy); ctx.lineTo(W-48, yy); ctx.stroke();
+    yy += 46;
 
     /* Chips: género / tono / ritmo / público */
-    var chips = [
-      genero  ? "🎭 " + genero  : "",
-      tono    ? "🎨 " + tono    : "",
-      ritmo   ? "⏩ " + ritmo   : "",
-      publico ? "👥 " + publico : ""
-    ].filter(Boolean);
-
     ctx.font = "500 28px Poppins, sans-serif";
-    var chipX = 48, chipY = y, chipAltoLinea = 60;
+    var chipX = 48, chipY = yy, chipAltoLinea = 60;
     chips.forEach(function(chip) {
-      var anchoTexto = ctx.measureText(chip).width;
-      var anchoChip  = anchoTexto + 44;
+      var anchoTexto2 = ctx.measureText(chip).width;
+      var anchoChip   = anchoTexto2 + 44;
       if (chipX + anchoChip > W - 48) { chipX = 48; chipY += chipAltoLinea; }
       ctx.fillStyle = "rgba(255,255,255,0.10)";
       _redondeado(ctx, chipX, chipY, anchoChip, 46, 23);
@@ -748,25 +802,24 @@ function generarImagenFicha(d, forzarSinPoster) {
       ctx.fillText(chip, chipX + 22, chipY + 31);
       chipX += anchoChip + 16;
     });
-    y = chipY + chipAltoLinea + 16;
+    if (chips.length) yy = chipY + chipAltoLinea + 16;
 
-    /* Reseña */
-    if (resena) {
+    /* Reseña — completa, sin truncar */
+    if (lineasResena.length) {
       ctx.fillStyle = "rgba(255,255,255,0.85)";
       ctx.font = "italic 400 30px Poppins, sans-serif";
-      y = _envolverTexto(ctx, "“" + resena + "”", 48, y+34, W-96, 42, 3);
-      y += 20;
+      yy = _dibujarLineas(ctx, lineasResena, 48, yy + 34, 42);
+      yy += 20;
     }
 
-    /* Flags */
-    if (flags) {
+    /* Flags — completos, sin truncar */
+    if (lineasFlags.length) {
       ctx.fillStyle = "#e0a05a";
       ctx.font = "600 28px Poppins, sans-serif";
-      y = _envolverTexto(ctx, "⚠️ " + flags, 48, y+34, W-96, 38, 1);
+      yy = _dibujarLineas(ctx, lineasFlags, 48, yy + 34, 38);
     }
 
     /* Footer con marca y link */
-    var footerAltura = 120;
     ctx.fillStyle = "#556b5d";
     ctx.fillRect(0, H-footerAltura, W, footerAltura);
     ctx.textAlign = "center";
@@ -785,7 +838,7 @@ function generarImagenFicha(d, forzarSinPoster) {
       } catch (err) { reject(err); }
     });
   }).catch(function(err) {
-    /* Si el póster deja el canvas "contaminado" (CORS), reintenta sin él */
+    /* Si el póster deja el canvas "contaminado", reintenta sin él */
     if (!forzarSinPoster) return generarImagenFicha(d, true);
     throw err;
   });
@@ -832,6 +885,7 @@ function generarImagenLista() {
       ctx.fillText((esPeli ? "🎬 " : "📺 ") + item.titulo, 48, y + 38);
 
       var sub = [
+        item.anio   ? item.anio : "",
         item.genero ? item.genero.split(",")[0].trim() : "",
         item.calif  ? "⭐ " + item.calif : ""
       ].filter(Boolean).join("   ·   ");
@@ -913,8 +967,10 @@ function toggleDeseo() {
   var tipo   = d["Tipo"] === "Pelicula" ? "Película" : "Serie";
   var genero = d["Género"] || d["Genero"] || "";
   var calif  = d["Calificación"] || d["Calificacion"] || "";
+  var anioRaw = d["Año"] || d["Anio"] || "";
+  var anio   = (String(anioRaw).match(/\d{4}/) || [""])[0];
 
-  toggleDeseoItem({ titulo: titulo, tipo: tipo, genero: genero, calif: calif });
+  toggleDeseoItem({ titulo: titulo, tipo: tipo, genero: genero, calif: calif, anio: anio });
   actualizarBtnDeseoModal();
 
   /* Sincronizar botón en card visible */
@@ -996,6 +1052,7 @@ function compartirListaCompleta(e) {
       var lineas = _deseos.map(function(d, i) {
         var extra = [];
         if (d.tipo)   extra.push(d.tipo);
+        if (d.anio)   extra.push(d.anio);
         if (d.genero) extra.push(d.genero.split(",")[0].trim());
         return (i+1) + ". " + d.titulo + (extra.length ? " (" + extra.join(" · ") + ")" : "");
       });
