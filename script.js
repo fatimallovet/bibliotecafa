@@ -534,6 +534,32 @@ function _compartirTextoDirecto(texto) {
 /* ══════════════════════════════════════
    COMPARTIR — archivo de imagen (share nativo, portapapeles o descarga)
    ══════════════════════════════════════ */
+/* En escritorio, navigator.clipboard.write() SOLO funciona si se invoca
+   de inmediato dentro del clic del usuario. Si esperamos a que la imagen
+   termine de generarse (cargar póster, fuentes, etc.) antes de llamarlo,
+   el navegador ya no lo permite y falla en silencio. Por eso aquí llamamos
+   a clipboard.write() ya mismo, pasándole la PROMESA de la imagen — el
+   navegador espera a que resuelva sin perder el permiso del clic. */
+function _compartirImagenDesdePromesa(promesaBlob, nombreArchivo, textoAlt) {
+  var esMobil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  if (!esMobil && navigator.clipboard && window.ClipboardItem) {
+    navigator.clipboard.write([ new ClipboardItem({ "image/png": promesaBlob }) ])
+      .then(function() { mostrarToast("¡Imagen copiada! Pégala donde quieras 🖼️"); })
+      .catch(function() {
+        promesaBlob.then(function(blob) { _descargarImagen(blob, nombreArchivo); })
+          .catch(function() { mostrarToast("No se pudo generar la imagen 😕"); });
+      });
+    return;
+  }
+
+  promesaBlob.then(function(blob) {
+    _compartirArchivoImagen(blob, nombreArchivo, textoAlt);
+  }).catch(function() {
+    mostrarToast("No se pudo generar la imagen 😕");
+  });
+}
+
 function _compartirArchivoImagen(blob, nombreArchivo, textoAlt) {
   var esMobil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   var file    = new File([blob], nombreArchivo, { type: "image/png" });
@@ -545,13 +571,7 @@ function _compartirArchivoImagen(blob, nombreArchivo, textoAlt) {
     return;
   }
 
-  if (navigator.clipboard && window.ClipboardItem) {
-    navigator.clipboard.write([ new ClipboardItem({ "image/png": blob }) ])
-      .then(function() { mostrarToast("¡Imagen copiada! Pégala donde quieras 🖼️"); })
-      .catch(function() { _descargarImagen(blob, nombreArchivo); });
-  } else {
-    _descargarImagen(blob, nombreArchivo);
-  }
+  _descargarImagen(blob, nombreArchivo);
 }
 
 function _descargarImagen(blob, nombreArchivo) {
@@ -990,23 +1010,15 @@ function generarImagenLista() {
 }
 
 function _compartirImagenFicha(d) {
-  generarImagenFicha(d).then(function(blob) {
-    var nombre = (campo(d, ["Título","Titulo"]) || "ficha").replace(/[^\w\-]+/g, "_") + ".png";
-    var textoAlt = "🎬 " + campo(d, ["Título","Titulo"]) + " — Videoteca Fátima\nhttps://fatimallovet.github.io/videotecafatima/";
-    _compartirArchivoImagen(blob, nombre, textoAlt);
-  }).catch(function() {
-    mostrarToast("No se pudo generar la imagen 😕");
-  });
+  var nombre = (campo(d, ["Título","Titulo"]) || "ficha").replace(/[^\w\-]+/g, "_") + ".png";
+  var textoAlt = "🎬 " + campo(d, ["Título","Titulo"]) + " — Videoteca Fátima\nhttps://fatimallovet.github.io/videotecafatima/";
+  _compartirImagenDesdePromesa(generarImagenFicha(d), nombre, textoAlt);
 }
 
 function _compartirImagenLista() {
   if (_deseos.length === 0) return;
-  generarImagenLista().then(function(blob) {
-    var textoAlt = "🎬 Mi lista de deseos — Videoteca Fátima\nhttps://fatimallovet.github.io/videotecafatima/";
-    _compartirArchivoImagen(blob, "mi-lista-videoteca.png", textoAlt);
-  }).catch(function() {
-    mostrarToast("No se pudo generar la imagen 😕");
-  });
+  var textoAlt = "🎬 Mi lista de deseos — Videoteca Fátima\nhttps://fatimallovet.github.io/videotecafatima/";
+  _compartirImagenDesdePromesa(generarImagenLista(), "mi-lista-videoteca.png", textoAlt);
 }
 
 /* ══════════════════════════════════════
