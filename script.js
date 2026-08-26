@@ -658,9 +658,9 @@ function _contarFilasChips(ctx, chips, W) {
    nada — ni la reseña ni los flags — queda cortado. */
 function generarImagenFicha(d, forzarSinPoster) {
   var W = 760;
-  var posterAltura = 440;
+  var padX = 36;
   var footerAltura = 84;
-  var anchoTexto = W - 72;
+  var anchoTexto = W - padX*2;
 
   var titulo    = campo(d, ["Título","Titulo"]);
   var calif     = campo(d, ["Calificación","Calificacion"]);
@@ -686,12 +686,20 @@ function generarImagenFicha(d, forzarSinPoster) {
   return Promise.all([cargaPoster, fontsListos]).then(function(res) {
     var imgPoster = res[0];
 
+    /* El póster se muestra completo, a su propia proporción (sin recortar).
+       Se calcula su alto a partir del ancho fijo y su proporción real. */
+    var posterW = 300;
+    var posterH = imgPoster
+      ? Math.round(posterW * (imgPoster.height / imgPoster.width))
+      : Math.round(posterW * 1.5); // proporción estándar de póster (2:3)
+    posterH = Math.max(280, Math.min(posterH, 560)); // evita proporciones extremas
+
     /* Canvas de medición: calcula cuánto espacio necesita cada bloque de
        texto ANTES de crear el canvas final, para que el alto total incluya
        siempre el texto completo (reseña y flags incluidos, sin recortes). */
     var medidor = document.createElement("canvas").getContext("2d");
 
-    medidor.font = "700 38px Poppins, sans-serif";
+    medidor.font = "700 34px Poppins, sans-serif";
     var lineasTitulo = _partirLineas(medidor, titulo, anchoTexto);
 
     var chips = [
@@ -712,10 +720,11 @@ function generarImagenFicha(d, forzarSinPoster) {
     var meta = [origen, anio, durVal ? (durVal + " " + durLabel) : ""].filter(Boolean).join("   ·   ");
 
     /* Alto total dinámico */
-    var y = posterAltura + 42;
-    y += lineasTitulo.length * 46 + 18;
-    if (calif) y += 36;
-    if (meta)  y += 40;
+    var y = 36 + posterH + 28; // margen superior + póster + espacio
+    y += 30; // etiqueta tipo
+    y += lineasTitulo.length * 42 + 14;
+    if (calif) y += 34;
+    if (meta)  y += 36;
     y += 32; // divisor
     if (chips.length)        y += filasChips * 42 + 12;
     if (lineasResena.length) y += 24 + lineasResena.length * 30 + 14;
@@ -734,78 +743,89 @@ function generarImagenFicha(d, forzarSinPoster) {
     ctx.fillStyle = gFondo;
     ctx.fillRect(0,0,W,H);
 
-    /* Póster o banda de color */
+    /* Póster centrado, con su proporción real (sin recortar) y sombra suave */
+    var posterX = (W - posterW) / 2;
+    var posterY = 36;
+
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.45)";
+    ctx.shadowBlur = 24;
+    ctx.shadowOffsetY = 10;
+    ctx.fillStyle = "#000000";
+    _redondeado(ctx, posterX, posterY, posterW, posterH, 14);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    _redondeado(ctx, posterX, posterY, posterW, posterH, 14);
+    ctx.clip();
     if (imgPoster) {
-      var escala = Math.max(W / imgPoster.width, posterAltura / imgPoster.height);
-      var pw = imgPoster.width * escala, ph = imgPoster.height * escala;
-      var px = (W - pw)/2, py = (posterAltura - ph)/2;
-      ctx.save();
-      ctx.beginPath(); ctx.rect(0,0,W,posterAltura); ctx.clip();
-      ctx.drawImage(imgPoster, px, py, pw, ph);
-      ctx.restore();
+      ctx.drawImage(imgPoster, posterX, posterY, posterW, posterH);
     } else {
-      var gBanda = ctx.createLinearGradient(0,0,W,posterAltura);
+      var gBanda = ctx.createLinearGradient(posterX, posterY, posterX, posterY + posterH);
       gBanda.addColorStop(0, colorBanda);
       gBanda.addColorStop(1, "#232323");
       ctx.fillStyle = gBanda;
-      ctx.fillRect(0,0,W,posterAltura);
+      ctx.fillRect(posterX, posterY, posterW, posterH);
+    }
+    ctx.restore();
+
+    if (!imgPoster) {
       ctx.textAlign = "center";
-      ctx.globalAlpha = 0.22;
-      ctx.font = "180px sans-serif";
-      ctx.fillText(esPeli ? "🎬" : "📺", W/2, posterAltura/2 + 62);
+      ctx.font = "84px sans-serif";
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(esPeli ? "🎬" : "📺", posterX + posterW/2, posterY + posterH/2 + 30);
       ctx.globalAlpha = 1;
     }
 
-    /* Fundido inferior del póster hacia el fondo */
-    var gFundido = ctx.createLinearGradient(0, posterAltura-160, 0, posterAltura);
-    gFundido.addColorStop(0, "rgba(30,28,25,0)");
-    gFundido.addColorStop(1, "rgba(30,28,25,1)");
-    ctx.fillStyle = gFundido;
-    ctx.fillRect(0, posterAltura-160, W, 160);
+    var yy = posterY + posterH + 28;
+    var centerX = W / 2;
 
-    /* Etiqueta tipo arriba a la izquierda */
-    ctx.textAlign = "left";
-    ctx.fillStyle = "rgba(255,255,255,0.95)";
-    ctx.font = "600 19px Poppins, sans-serif";
-    ctx.fillText(esPeli ? "🎬 PELÍCULA" : "📺 SERIE", 36, 44);
+    /* Etiqueta tipo, centrada bajo el póster */
+    ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.font = "600 16px Poppins, sans-serif";
+    ctx.fillText(esPeli ? "PELÍCULA" : "SERIE", centerX, yy);
+    yy += 34;
 
-    var yy = posterAltura + 42;
-
-    /* Título */
+    /* Título, centrado */
     ctx.fillStyle = "#ffffff";
-    ctx.font = "700 38px Poppins, sans-serif";
-    yy = _dibujarLineas(ctx, lineasTitulo, 36, yy, 46);
-    yy += 18;
+    ctx.font = "700 34px Poppins, sans-serif";
+    lineasTitulo.forEach(function(l, idx) { ctx.fillText(l, centerX, yy + idx * 42); });
+    yy += lineasTitulo.length * 42 + 14;
 
-    /* Calificación */
+    /* Calificación, centrada */
     if (calif) {
       ctx.fillStyle = "#f3c344";
-      ctx.font = "700 26px Poppins, sans-serif";
-      ctx.fillText("⭐ " + calif + " / 10", 36, yy);
+      ctx.font = "700 24px Poppins, sans-serif";
+      ctx.fillText("⭐ " + calif + " / 10", centerX, yy);
+      yy += 34;
+    }
+
+    /* Meta: origen · año · duración, centrada */
+    if (meta) {
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.font = "400 20px Poppins, sans-serif";
+      ctx.fillText(meta, centerX, yy);
       yy += 36;
     }
 
-    /* Meta: origen · año · duración */
-    if (meta) {
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.font = "400 22px Poppins, sans-serif";
-      ctx.fillText(meta, 36, yy);
-      yy += 40;
-    }
+    /* El resto del contenido vuelve a alineación izquierda para lectura normal */
+    ctx.textAlign = "left";
 
     /* Línea divisoria */
     ctx.strokeStyle = "rgba(255,255,255,0.15)";
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(36, yy); ctx.lineTo(W-36, yy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(padX, yy); ctx.lineTo(W-padX, yy); ctx.stroke();
     yy += 32;
 
     /* Chips: género / tono / ritmo / público */
     ctx.font = "500 20px Poppins, sans-serif";
-    var chipX = 36, chipY = yy, chipAltoLinea = 42;
+    var chipX = padX, chipY = yy, chipAltoLinea = 42;
     chips.forEach(function(chip) {
-      var anchoTexto2 = ctx.measureText(chip).width;
-      var anchoChip   = anchoTexto2 + 32;
-      if (chipX + anchoChip > W - 36) { chipX = 36; chipY += chipAltoLinea; }
+      var anchoChip = ctx.measureText(chip).width + 32;
+      if (chipX + anchoChip > W - padX) { chipX = padX; chipY += chipAltoLinea; }
       ctx.fillStyle = "rgba(255,255,255,0.10)";
       _redondeado(ctx, chipX, chipY, anchoChip, 32, 16);
       ctx.fill();
@@ -819,7 +839,7 @@ function generarImagenFicha(d, forzarSinPoster) {
     if (lineasResena.length) {
       ctx.fillStyle = "rgba(255,255,255,0.85)";
       ctx.font = "italic 400 21px Poppins, sans-serif";
-      yy = _dibujarLineas(ctx, lineasResena, 36, yy + 24, 30);
+      yy = _dibujarLineas(ctx, lineasResena, padX, yy + 24, 30);
       yy += 14;
     }
 
@@ -827,7 +847,7 @@ function generarImagenFicha(d, forzarSinPoster) {
     if (lineasFlags.length) {
       ctx.fillStyle = "#e0a05a";
       ctx.font = "600 20px Poppins, sans-serif";
-      yy = _dibujarLineas(ctx, lineasFlags, 36, yy + 24, 27);
+      yy = _dibujarLineas(ctx, lineasFlags, padX, yy + 24, 27);
     }
 
     /* Footer con marca y link */
@@ -907,7 +927,13 @@ function generarImagenLista() {
       var img = posters[i];
 
       if (img) {
-        var escala = Math.max(thumbW/img.width, thumbH/img.height);
+        /* Fondo del color de género, por si el póster no llena toda la miniatura */
+        ctx.fillStyle = BANDA_COLORES[claseBanda(item.genero || "")] || "#9aab9e";
+        _redondeado(ctx, padX, thumbY, thumbW, thumbH, 7);
+        ctx.fill();
+
+        /* "Contain": se ve la portada completa, sin recortar */
+        var escala = Math.min(thumbW/img.width, thumbH/img.height);
         var pw = img.width*escala, ph = img.height*escala;
         var px = padX + (thumbW-pw)/2, py = thumbY + (thumbH-ph)/2;
         ctx.save();
