@@ -431,6 +431,7 @@ function fichaTexto(d) {
   var flags     = campo(d, ["Flags"]);
   var resena    = campo(d, ["Reseña","Resena"]);
   var imdb      = campo(d, ["IMDB"]);
+  var streaming = obtenerStreaming(d);
 
   var lineas = [];
   lineas.push("🎬 " + titulo + " (" + tipo + ")");
@@ -445,6 +446,9 @@ function fichaTexto(d) {
   if (publico)   lineas.push("Público: " + publico);
   if (etiquetas) lineas.push("Etiquetas: " + etiquetas);
   if (flags)     lineas.push("⚠️ Flags: " + flags);
+  if (streaming && streaming.plataformas && streaming.plataformas.length > 0) {
+    lineas.push("📺 Disponible en: " + streaming.plataformas.join(", "));
+  }
   if (resena)    lineas.push("\nReseña: " + resena);
   lineas.push("\n— Recomendada por: Fátima Llovet");
   lineas.push("https://fatimallovet.github.io/videotecafatima/");
@@ -697,6 +701,10 @@ function generarImagenFicha(d, forzarSinPoster) {
   var resena    = campo(d, ["Reseña","Resena"]);
   var poster    = campo(d, ["Poster","poster","Póster","póster"]).trim();
   var colorBanda = BANDA_COLORES[claseBanda(genero)] || "#9aab9e";
+  var streaming = obtenerStreaming(d);
+  var streamingTexto = (streaming && streaming.plataformas && streaming.plataformas.length > 0)
+    ? "📺 " + streaming.plataformas.join("  ·  ")
+    : "";
 
   var cargaPoster = (poster && !forzarSinPoster)
     ? _cargarPoster(poster).catch(function() { return null; })
@@ -737,6 +745,9 @@ function generarImagenFicha(d, forzarSinPoster) {
     medidor.font = "600 20px Poppins, sans-serif";
     var lineasFlags = flags ? _partirLineas(medidor, "⚠️ " + flags, anchoTexto) : [];
 
+    medidor.font = "500 20px Poppins, sans-serif";
+    var lineasStreaming = streamingTexto ? _partirLineas(medidor, streamingTexto, anchoTexto) : [];
+
     var meta = [origen, anio, durVal ? (durVal + " " + durLabel) : ""].filter(Boolean).join("   ·   ");
 
     /* Alto total dinámico */
@@ -745,6 +756,7 @@ function generarImagenFicha(d, forzarSinPoster) {
     y += lineasTitulo.length * 42 + 14;
     if (calif) y += 34;
     if (meta)  y += 36;
+    if (lineasStreaming.length) y += lineasStreaming.length * 28 + 10;
     y += 32; // divisor
     if (chips.length)        y += filasChips * 42 + 12;
     if (lineasResena.length) y += 24 + lineasResena.length * 36 + 14;
@@ -829,6 +841,14 @@ function generarImagenFicha(d, forzarSinPoster) {
       ctx.font = "400 20px Poppins, sans-serif";
       ctx.fillText(meta, centerX, yy);
       yy += 36;
+    }
+
+    /* Disponibilidad en streaming, centrada */
+    if (lineasStreaming.length) {
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.font = "500 20px Poppins, sans-serif";
+      lineasStreaming.forEach(function(l, idx) { ctx.fillText(l, centerX, yy + idx * 28); });
+      yy += lineasStreaming.length * 28 + 10;
     }
 
     /* El resto del contenido vuelve a alineación izquierda para lectura normal */
